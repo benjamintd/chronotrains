@@ -1,0 +1,27 @@
+import { Station } from "@prisma/client";
+import type { NextApiRequest, NextApiResponse } from "next";
+import prisma from "~/lib/prisma";
+
+export type StationsRes = {
+  stations: Array<Station & { _count: { isochrones: number } }>;
+};
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<StationsRes>
+) {
+  let stations = await prisma.station.findMany({
+    where: {
+      isochrones: {
+        some: {},
+      },
+    },
+    include: { _count: { select: { isochrones: true, timesDeparting: true } } },
+  });
+
+  stations = stations
+    .filter((s) => s._count.isochrones === 7)
+    .sort((a, b) => b._count.timesDeparting - a._count.timesDeparting);
+
+  return res.json({ stations });
+}

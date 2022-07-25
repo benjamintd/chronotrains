@@ -9,33 +9,52 @@ datasource db {
 }
 
 model Station {
-  id                 Int          @id
+  id                 Int                      @id
   name               String
-  latitudeE7         Int          @map("latitude_e7")
-  longitudeE7        Int          @map("longitude_e7")
-  directTimesFetched Boolean      @map("direct_times_fetched")
+  latitudeE7         Int                      @map("latitude_e7")
+  longitudeE7        Int                      @map("longitude_e7")
+  directTimesFetched Boolean                  @map("direct_times_fetched")
+  geom               Unsupported("geometry")?
+  timesDeparting     DirectTime[]             @relation("from_station")
+  timesArriving      DirectTime[]             @relation("to_station")
   isochrones         Isochrone[]
-  timesArriving      DirectTime[]
 
+  @@index([geom], map: "geom_idx", type: Gist)
   @@map("stations")
 }
 
 model DirectTime {
-  fromStation   Station @relation(fields: [fromStationId], references: [id])
-  fromStationId Int     @map("from_station_id")
-  toStationId   Int     @map("to_station_id")
-  distanceKm    Int     @map("distance_km")
-  duration      Int     @map("duration")
+  toStationId   Int               @map("to_station_id")
+  fromStationId Int               @map("from_station_id")
+  distanceKm    Int               @map("distance_km")
+  duration      Int
+  fromStation   Station           @relation("from_station", fields: [fromStationId], references: [id])
+  toStation     Station           @relation("to_station", fields: [toStationId], references: [id])
+  source        DirectTimeSource?
 
   @@id([toStationId, fromStationId])
   @@map("direct_times")
 }
 
 model Isochrone {
-  stationId Int     @id @map("station_id")
-  station   Station @relation(fields: [stationId], references: [id])
-  duration  Int     @map("duration")
+  stationId Int     @map("station_id")
+  duration  Int
   geometry  Json
+  station   Station @relation(fields: [stationId], references: [id])
 
+  @@id([stationId, duration])
   @@map("isochrones")
+}
+
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
+
+enum DirectTimeSource {
+  bahnguru
+  computed
 }

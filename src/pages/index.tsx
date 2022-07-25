@@ -1,84 +1,181 @@
 import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
+import mapboxgl, { GeoJSONSource, MapMouseEvent } from 'mapbox-gl';
+import { useEffect, useRef, useState } from 'react';
+import "mapbox-gl/dist/mapbox-gl.css";
+import useSWR from 'swr';
+import { StationsRes } from './api/stations';
+import { IsochronesRes } from './api/isochrones/[stationId]';
 
+mapboxgl.accessToken = 'pk.eyJ1IjoiYmVuamFtaW50ZCIsImEiOiJjaW83enIwNjYwMnB1dmlsejN6cDBzbm93In0.0ZOGwSLp8OjW6vCaEKYFng';
 const Home: NextPage = () => {
+  const mapContainer = useRef<HTMLDivElement | null>(null);
+  const [map, setMap] = useState<mapboxgl.Map | null>(null);
+  const [hoveredStation, setHoveredStation] = useState<number | null>(null);
+
+  const { data: stationsData } = useSWR<StationsRes>('/api/stations');
+  const { data: isochronesData } = useSWR<IsochronesRes>(hoveredStation ? `/api/isochrones/${hoveredStation}` : null);
+
+  useEffect(() => {
+    if (map) return; // initialize map only once
+    let mapboxMap = new mapboxgl.Map({
+      container: mapContainer.current!,
+      style: 'mapbox://styles/mapbox/light-v9',
+      center: [2, 45],
+      zoom: 4
+    });
+
+    mapboxMap.on('load', () => {
+      setMap(mapboxMap);
+
+      mapboxMap.addSource('stations', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+      mapboxMap.addSource("isochrones", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] }
+      });
+      mapboxMap.addSource("hoveredStation", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] }
+      });
+
+
+      mapboxMap.addLayer({
+        id: 'stations',
+        type: 'circle',
+        source: 'stations',
+        paint: {
+          'circle-radius': 1,
+          'circle-color': '#007cbf'
+        }
+      }, 'waterway-label');
+
+
+      mapboxMap.addLayer(
+        {
+          id: "isochrones",
+          type: "fill",
+          source: "isochrones",
+          layout: {},
+          paint: {
+            "fill-opacity": 0.9,
+            "fill-color": [
+              "interpolate",
+              ["linear"],
+              ["get", "duration"],
+              0,
+              "rgba(189,0,38,0.9)",
+              60,
+              "rgba(240,59,32,0.8)",
+              120,
+              "rgba(253,141,60,0.7)",
+              180,
+              "rgba(254,204,92,0.6)",
+              240,
+              "rgba(254,217,118, 0.5)",
+              300,
+              "rgba(255,255,178, 0.4)"
+            ],
+          }
+        },
+        "waterway-label"
+      );
+
+      mapboxMap.addLayer(
+        {
+          id: "isochrones-outline",
+          type: "line",
+          source: "isochrones", // reference the data source
+          layout: {},
+          paint: {
+            "line-color": "#f00",
+            "line-width": 1.5,
+            "line-opacity": [
+              "case",
+              ["==", ['get', 'duration'], 300],
+              0.4,
+              0
+            ]
+          }
+        },
+        "waterway-label"
+      );
+
+      mapboxMap.addLayer({
+        id: 'hoveredStation',
+        type: 'symbol',
+        source: 'hoveredStation',
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-offset': [0, -1.5],
+          'text-font': ['DIN Pro Bold', "Open Sans Bold"],
+          'icon-image': 'dot-11',
+        },
+        paint: {
+          'text-color': "#110"
+        }
+      });
+
+
+      mapboxMap.on('mousemove', (e: MapMouseEvent) => {
+        const features = mapboxMap.queryRenderedFeatures([[e.point.x - 10, e.point.y - 10], [e.point.x + 10, e.point.y + 10]], {
+          layers: ['stations']
+        });
+        if (features.length) {
+          mapboxMap.getCanvas().style.cursor = 'crosshair';
+          const station = features[features.length - 1]; // the largest according to the API scoring
+          setHoveredStation(station.id as number);
+          (mapboxMap.getSource('hoveredStation') as GeoJSONSource).setData(station);
+        } else {
+          mapboxMap.getCanvas().style.cursor = 'default';
+          setHoveredStation(null);
+          (mapboxMap.getSource('hoveredStation') as GeoJSONSource).setData({ type: 'FeatureCollection', features: [] });
+        }
+      })
+    });
+  }, []);
+
+  useEffect(() => {
+    if (map && stationsData?.stations) {
+      (map.getSource('stations') as GeoJSONSource).setData({
+        type: 'FeatureCollection',
+        features: stationsData.stations.map(station => ({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [station.longitudeE7 / 1e7, station.latitudeE7 / 1e7]
+          },
+          properties: {
+            name: station.name
+          },
+          id: station.id
+        }))
+      });
+    }
+
+  }, [stationsData, map]);
+
+  useEffect(() => {
+    if (map && isochronesData?.isochrones) {
+      if (hoveredStation) {
+        (map.getSource('isochrones') as GeoJSONSource).setData({
+          type: 'FeatureCollection',
+          features: isochronesData.isochrones.map(iso => iso.geometry as any)
+        });
+      } else {
+        (map.getSource('isochrones') as GeoJSONSource).setData({
+          type: 'FeatureCollection',
+          features: []
+        });
+      }
+    }
+
+  }, [isochronesData, hoveredStation, map])
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-2">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
-
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="rounded-md bg-gray-100 p-3 font-mono text-lg">
-            pages/index.tsx
-          </code>
-        </p>
-
-        <div className="mt-6 flex max-w-4xl flex-wrap items-center justify-around sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and its API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className="flex h-24 w-full items-center justify-center border-t">
-        <a
-          className="flex items-center justify-center gap-2"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-        </a>
-      </footer>
+    <div className="w-screen h-screen">
+      <div className='h-full w-full' ref={mapContainer} />
     </div>
   )
 }

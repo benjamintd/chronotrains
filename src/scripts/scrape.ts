@@ -17,6 +17,7 @@ interface APIStation {
 
 export const main = async () => {
   const baseUrl = "https://api.direkt.bahn.guru";
+  const skipList: number[] = [1];
 
   let keepGoing = true;
 
@@ -26,6 +27,7 @@ export const main = async () => {
       join direct_times on stations.id = direct_times.to_station_id
       where direct_times_fetched = false
       and distance_km > 30
+      and stations.id not in (${Prisma.join(skipList)})
       group by stations.id, stations.latitude_e7, stations.longitude_e7, stations.name, stations.direct_times_fetched
       order by max(direct_times.distance_km * direct_times.distance_km / direct_times.duration) desc
       limit 5;
@@ -46,7 +48,20 @@ export const main = async () => {
 
         const url = `${baseUrl}/${station.id}?${params.toString()}`;
 
-        const stations = await fetch(url).then((res) => res.json());
+        let stations: APIStation[];
+
+        try {
+          stations = await fetch(url).then((res) => res.json());
+
+          if (!Array.isArray(stations)) {
+            console.log("ERROR", station.id);
+            skipList.push(station.id);
+            return;
+          }
+        } catch (error) {
+          console.log("ERROR NETWORK", station.id);
+          return;
+        }
 
         await prisma.station.createMany({
           data: stations.map((s: APIStation): Prisma.StationCreateInput => {
@@ -62,19 +77,25 @@ export const main = async () => {
         });
 
         await prisma.directTime.createMany({
-          data: stations.map((s: APIStation): Prisma.DirectTimeCreateInput => {
-            return {
-              fromStationId: +station.id,
-              toStationId: +s.id,
-              duration: s.duration,
-              distanceKm: Math.round(
-                distance(
-                  point([station.longitudeE7 / 1e7, station.latitudeE7 / 1e7]),
-                  point([s.location.longitude, s.location.latitude])
-                )
-              ),
-            };
-          }),
+          data: stations.map(
+            (s: APIStation): Prisma.DirectTimeCreateManyInput => {
+              return {
+                fromStationId: +station.id,
+                toStationId: +s.id,
+                duration: s.duration,
+                distanceKm: Math.round(
+                  distance(
+                    point([
+                      station.longitudeE7 / 1e7,
+                      station.latitudeE7 / 1e7,
+                    ]),
+                    point([s.location.longitude, s.location.latitude])
+                  )
+                ),
+                source: "bahnguru",
+              };
+            }
+          ),
           skipDuplicates: true,
         });
 
