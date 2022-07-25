@@ -1,11 +1,10 @@
 import type { NextPage } from 'next'
 import mapboxgl, { GeoJSONSource, MapMouseEvent } from 'mapbox-gl';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import "mapbox-gl/dist/mapbox-gl.css";
 import useSWR from 'swr';
 import { StationsRes } from './api/stations';
-import { IsochronesRes } from './api/isochrones/[stationId]';
-import { FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
+import { ShortestTimesRes } from './api/shortest-times/[stationId]';
 import LRUCache from 'lru-cache';
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYmVuamFtaW50ZCIsImEiOiJjaW83enIwNjYwMnB1dmlsejN6cDBzbm93In0.0ZOGwSLp8OjW6vCaEKYFng';
@@ -14,10 +13,14 @@ const Home: NextPage = () => {
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const [hoveredStation, setHoveredStation] = useState<number | null>(null);
 
-  const { data: stationsData } = useSWR<StationsRes>('/api/stations');
-  const { data: isochronesData } = useSWR<IsochronesRes>(hoveredStation ? `/api/isochrones/${hoveredStation}` : null);
+  const { data: stationsData } = useSWR<StationsRes>('/api/stations', (resource, init) => fetch(resource, init).then(res => res.json()));
+  const { data: timesArray } = useSWR<ShortestTimesRes>(hoveredStation ? `/api/shortest-times/${hoveredStation}` : null, (resource, init) => fetch(resource, init).then(async res => {
+    let data = await res.json();
+    console.log(data.length);
+    return data;
+  }));
 
-  const isochronesMap = useRef<LRUCache<number, FeatureCollection<Polygon | MultiPolygon, { duration: number }>>>(new LRUCache({ max: 500 }));
+  const timesArrayMap = useRef<LRUCache<number, Int32Array>>(new LRUCache({ max: 500 }));
 
   useEffect(() => {
     if (map) return; // initialize map only once
@@ -51,7 +54,59 @@ const Home: NextPage = () => {
         source: 'stations',
         paint: {
           'circle-radius': 5,
-          'circle-opacity': 0
+          'circle-opacity': 1,
+          "circle-color": [
+            'interpolate',
+            ['linear'],
+            ['number', ['feature-state', 'duration']],
+            0, '#ffffff',
+            300, '#ff0000'
+          ]
+        }
+      }, 'waterway-label');
+
+      mapboxMap.addLayer({
+        id: 'iso-heatmap',
+        type: 'heatmap',
+        source: 'stations',
+        paint: {
+          'heatmap-radius': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            0,
+            2,
+            9,
+            20
+          ],
+          'heatmap-intensity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            0,
+            100,
+            9,
+            300
+          ],
+          'heatmap-weight':
+            ['-', 300, ['number', ['feature-state', 'duration'], 300]],
+          'heatmap-color': [
+            'interpolate',
+            ['linear'],
+            ['heatmap-density'],
+            0,
+            'rgba(33,102,172,0)',
+            0.2,
+            'rgb(103,169,207)',
+            0.4,
+            'rgb(209,229,240)',
+            0.6,
+            'rgb(253,219,199)',
+            0.8,
+            'rgb(239,138,98)',
+            1,
+            'rgb(178,24,43)'
+          ],
         }
       }, 'waterway-label');
 
@@ -150,6 +205,22 @@ const Home: NextPage = () => {
     });
   }, []);
 
+  const fillFeatureStates = useCallback((map: mapboxgl.Map, data: Int32Array) => {
+    console.log(stationsData, data)
+    if (!stationsData) return;
+
+    for (let station of stationsData.stations) {
+      map.removeFeatureState({ source: 'stations', id: station.id });
+    }
+    for (let i = 0; i < data.length / 2; i++) {
+      map.setFeatureState({ source: 'stations', id: data[i * 2] }, { duration: data[i * 2 + 1] });
+    }
+  }, [stationsData]);
+
+  const emptyFeatureStates = (map: mapboxgl.Map) => {
+    map.removeFeatureState({ source: 'stations' });
+  }
+
   useEffect(() => {
     if (map && stationsData?.stations) {
       (map.getSource('stations') as GeoJSONSource).setData({
@@ -171,28 +242,21 @@ const Home: NextPage = () => {
   }, [stationsData, map]);
 
   useEffect(() => {
+    console.log(timesArray, hoveredStation, map)
     if (map) {
       if (hoveredStation) {
-        if (isochronesMap.current.has(hoveredStation)) {
-          (map.getSource('isochrones') as GeoJSONSource).setData(isochronesMap.current.get(hoveredStation)!);
-        } else if (isochronesData?.isochrones) {
-          const fc: FeatureCollection<Polygon | MultiPolygon, { duration: number }> = {
-            type: 'FeatureCollection',
-            features: isochronesData.isochrones.map(iso => iso.geometry as any)
-          }
-
-          isochronesMap.current.set(hoveredStation, fc);
-          (map.getSource('isochrones') as GeoJSONSource).setData(fc);
+        if (timesArrayMap.current.has(hoveredStation)) {
+          fillFeatureStates(map, timesArrayMap.current.get(hoveredStation)!);
+        } else if (timesArray) {
+          timesArrayMap.current.set(hoveredStation, timesArray);
+          fillFeatureStates(map, timesArray);
         }
       } else {
-        (map.getSource('isochrones') as GeoJSONSource).setData({
-          type: 'FeatureCollection',
-          features: []
-        });
+        emptyFeatureStates(map)
       }
     }
 
-  }, [isochronesData, hoveredStation, map]);
+  }, [timesArray, hoveredStation, map]);
 
   return (
     <div className="w-screen h-screen">

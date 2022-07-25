@@ -34,7 +34,8 @@ const computeIsochrones = async (
     duration: number;
     fromStationId: number;
     toStationId: number;
-  }[]
+  }[],
+  stationsMap: Map<number, Station>
 ) => {
   let startStations = new Set([stationId]);
   let visitedStations = new Set<number>();
@@ -78,15 +79,11 @@ const computeIsochrones = async (
     interchanges++;
   }
 
-  const stations = await prisma.station.findMany({
-    where: { id: { in: Array.from(visitedStations) } },
-  });
-
   const isochrones: Feature<MultiPolygon | Polygon, { duration: number }>[] =
     [];
 
   let isoGeometry: Feature<Polygon | MultiPolygon> = buffer(
-    stationToPoint(stations.find((s) => s.id === stationId)!),
+    stationToPoint(stationsMap.get(stationId)!),
     TRANSIT_SPEED * TRANSITABLE_DISTANCE,
     { units: "kilometers", steps: BUFFER_STEPS }
   );
@@ -100,10 +97,11 @@ const computeIsochrones = async (
       steps: BUFFER_STEPS,
     });
 
-    const stationsInIsochrone = stations.filter((s) => {
-      const time = travelTimes.get(s.id);
-      return time && time <= maxTime && time >= minTime;
-    });
+    const stationsInIsochrone = Array.from(travelTimes.entries())
+      .filter(([id, time]) => {
+        return time && time <= maxTime && time >= minTime;
+      })
+      .map(([id, time]) => stationsMap.get(id)!);
 
     let fc = featureCollection(
       stationsInIsochrone.map((s) =>
@@ -186,6 +184,10 @@ const main = async () => {
   const directTimes = await prisma.directTime.findMany({
     select: { fromStationId: true, toStationId: true, duration: true },
   });
+
+  const stations = await prisma.station.findMany({});
+  const stationsMap = new Map(stations.map((s) => [s.id, s]));
+
   while (keepGoing) {
     const stations = await fetchStationsWithNoIsochrones();
     if (stations.length === 0) {
@@ -193,7 +195,7 @@ const main = async () => {
     }
     for (let stationId of stations) {
       try {
-        await computeIsochrones(stationId, directTimes).then(() =>
+        await computeIsochrones(stationId, directTimes, stationsMap).then(() =>
           console.log(stationId)
         );
       } catch (error) {
