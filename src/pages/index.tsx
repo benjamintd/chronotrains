@@ -5,6 +5,8 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import useSWR from 'swr';
 import { StationsRes } from './api/stations';
 import { IsochronesRes } from './api/isochrones/[stationId]';
+import { FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
+import LRUCache from 'lru-cache';
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYmVuamFtaW50ZCIsImEiOiJjaW83enIwNjYwMnB1dmlsejN6cDBzbm93In0.0ZOGwSLp8OjW6vCaEKYFng';
 const Home: NextPage = () => {
@@ -14,6 +16,8 @@ const Home: NextPage = () => {
 
   const { data: stationsData } = useSWR<StationsRes>('/api/stations');
   const { data: isochronesData } = useSWR<IsochronesRes>(hoveredStation ? `/api/isochrones/${hoveredStation}` : null);
+
+  const isochronesMap = useRef<LRUCache<number, FeatureCollection<Polygon | MultiPolygon, { duration: number }>>>(new LRUCache({ max: 500 }));
 
   useEffect(() => {
     if (map) return; // initialize map only once
@@ -46,8 +50,8 @@ const Home: NextPage = () => {
         type: 'circle',
         source: 'stations',
         paint: {
-          'circle-radius': 1,
-          'circle-color': '#007cbf'
+          'circle-radius': 5,
+          'circle-opacity': 0
         }
       }, 'waterway-label');
 
@@ -59,7 +63,7 @@ const Home: NextPage = () => {
           source: "isochrones",
           layout: {},
           paint: {
-            "fill-opacity": 0.9,
+            "fill-opacity": 0.7,
             "fill-color": [
               "interpolate",
               ["linear"],
@@ -86,17 +90,27 @@ const Home: NextPage = () => {
         {
           id: "isochrones-outline",
           type: "line",
-          source: "isochrones", // reference the data source
+          source: "isochrones",
           layout: {},
           paint: {
-            "line-color": "#f00",
+            "line-color": [
+              "interpolate",
+              ["linear"],
+              ["get", "duration"],
+              0,
+              "rgba(189,0,38,0.8)",
+              60,
+              "rgba(240,59,32,0.8)",
+              120,
+              "rgba(253,141,60,0.8)",
+              180,
+              "rgba(254,204,92,0.8)",
+              240,
+              "rgba(254,217,118,0.8)",
+              300,
+              "rgba(224, 116, 38,0.9)"
+            ],
             "line-width": 1.5,
-            "line-opacity": [
-              "case",
-              ["==", ['get', 'duration'], 300],
-              0.4,
-              0
-            ]
           }
         },
         "waterway-label"
@@ -157,12 +171,19 @@ const Home: NextPage = () => {
   }, [stationsData, map]);
 
   useEffect(() => {
-    if (map && isochronesData?.isochrones) {
+    if (map) {
       if (hoveredStation) {
-        (map.getSource('isochrones') as GeoJSONSource).setData({
-          type: 'FeatureCollection',
-          features: isochronesData.isochrones.map(iso => iso.geometry as any)
-        });
+        if (isochronesMap.current.has(hoveredStation)) {
+          (map.getSource('isochrones') as GeoJSONSource).setData(isochronesMap.current.get(hoveredStation)!);
+        } else if (isochronesData?.isochrones) {
+          const fc: FeatureCollection<Polygon | MultiPolygon, { duration: number }> = {
+            type: 'FeatureCollection',
+            features: isochronesData.isochrones.map(iso => iso.geometry as any)
+          }
+
+          isochronesMap.current.set(hoveredStation, fc);
+          (map.getSource('isochrones') as GeoJSONSource).setData(fc);
+        }
       } else {
         (map.getSource('isochrones') as GeoJSONSource).setData({
           type: 'FeatureCollection',
@@ -171,11 +192,11 @@ const Home: NextPage = () => {
       }
     }
 
-  }, [isochronesData, hoveredStation, map])
+  }, [isochronesData, hoveredStation, map]);
 
   return (
     <div className="w-screen h-screen">
-      <div className='h-full w-full' ref={mapContainer} />
+      <div className='w-full h-full' ref={mapContainer} />
     </div>
   )
 }
