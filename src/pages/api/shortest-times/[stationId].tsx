@@ -2,7 +2,7 @@ import { Isochrone, Station } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "~/lib/prisma";
 
-export type ShortestTimesRes = Int32Array;
+export type ShortestTimesRes = number[];
 
 export default async function handler(
   req: NextApiRequest,
@@ -14,14 +14,12 @@ export default async function handler(
     }
   });
 
-  let buffer = new Int32Array(shortestTimes.length * 2);
+  let array = new Array(shortestTimes.length * 2);
   for (let i = 0; i < shortestTimes.length; i++) {
-    buffer[i * 2] = shortestTimes[i].toStationId;
-    buffer[i * 2 + 1] = shortestTimes[i].duration;
+    array[i * 2] = shortestTimes[i].toStationId;
+    array[i * 2 + 1] = shortestTimes[i].duration;
   }
 
-  console.log(buffer)
 
-  res.setHeader("Content-Type", "application/octet-stream");
-  return res.send(buffer)
+  return res.json(array);
 }

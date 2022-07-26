@@ -33,8 +33,7 @@ export default async function handler(
 
   stations = stations
     .filter((s) => s._count.isochrones === 7)
-    .sort((a, b) => b._count.timesDeparting - a._count.timesDeparting)
-    .slice(0, 10000);
+    .sort((a, b) => b._count.timesDeparting - a._count.timesDeparting);
 
   return res.json({ stations });
 }
