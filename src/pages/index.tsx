@@ -13,7 +13,7 @@ const Home: NextPage = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const [hoveredStation, setHoveredStation] = useState<number | null>(null);
-
+  const [displayedIsochrones, setDisplayedIsochrones] = useState<number | null>(null);
   const { data: stationsData } = useSWR<StationsRes>('/api/stations');
   const { data: isochronesData } = useSWR<IsochronesRes>(hoveredStation ? `/api/isochrones/${hoveredStation}` : null);
 
@@ -148,7 +148,7 @@ const Home: NextPage = () => {
         }
       })
     });
-  }, []);
+  }, [map]);
 
   useEffect(() => {
     if (map && stationsData?.stations) {
@@ -171,28 +171,31 @@ const Home: NextPage = () => {
   }, [stationsData, map]);
 
   useEffect(() => {
+    if (displayedIsochrones === hoveredStation) {
+      return
+    }
     if (map) {
       if (hoveredStation) {
         if (isochronesMap.current.has(hoveredStation)) {
           (map.getSource('isochrones') as GeoJSONSource).setData(isochronesMap.current.get(hoveredStation)!);
-        } else if (isochronesData?.isochrones) {
-          const fc: FeatureCollection<Polygon | MultiPolygon, { duration: number }> = {
-            type: 'FeatureCollection',
-            features: isochronesData.isochrones.map(iso => iso.geometry as any)
-          }
-
+          setDisplayedIsochrones(hoveredStation);
+        } else if (isochronesData && isochronesData.stationId === hoveredStation) {
+          const fc = isochronesData.geometry as any as FeatureCollection<Polygon | MultiPolygon, { duration: number }>
           isochronesMap.current.set(hoveredStation, fc);
           (map.getSource('isochrones') as GeoJSONSource).setData(fc);
+          setDisplayedIsochrones(hoveredStation);
         }
-      } else {
+
+      } else if (!hoveredStation) {
         (map.getSource('isochrones') as GeoJSONSource).setData({
           type: 'FeatureCollection',
           features: []
         });
+        setDisplayedIsochrones(null);
       }
     }
 
-  }, [isochronesData, hoveredStation, map]);
+  }, [displayedIsochrones, isochronesData, hoveredStation, map]);
 
   return (
     <div className="w-screen h-screen">

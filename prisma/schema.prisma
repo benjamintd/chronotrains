@@ -28,9 +28,9 @@ model DirectTime {
   fromStationId Int               @map("from_station_id")
   distanceKm    Int               @map("distance_km")
   duration      Int
+  source        DirectTimeSource?
   fromStation   Station           @relation("from_station", fields: [fromStationId], references: [id])
   toStation     Station           @relation("to_station", fields: [toStationId], references: [id])
-  source        DirectTimeSource?
 
   @@id([toStationId, fromStationId])
   @@map("direct_times")
