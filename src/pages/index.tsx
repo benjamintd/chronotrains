@@ -1,11 +1,9 @@
 import type { NextPage } from 'next'
 import mapboxgl, { GeoJSONSource, MapMouseEvent } from 'mapbox-gl';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import "mapbox-gl/dist/mapbox-gl.css";
 import useSWR from 'swr';
 import { StationsRes } from './api/stations';
-import { IsochronesRes } from './api/isochrones/[stationId]';
-import { FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
 import LRUCache from 'lru-cache';
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYmVuamFtaW50ZCIsImEiOiJjaW83enIwNjYwMnB1dmlsejN6cDBzbm93In0.0ZOGwSLp8OjW6vCaEKYFng';
@@ -15,9 +13,9 @@ const Home: NextPage = () => {
   const [hoveredStation, setHoveredStation] = useState<number | null>(null);
   const [displayedIsochrones, setDisplayedIsochrones] = useState<number | null>(null);
   const { data: stationsData } = useSWR<StationsRes>('/api/stations');
-  const { data: isochronesData } = useSWR<IsochronesRes>(hoveredStation ? `/api/isochrones/${hoveredStation}` : null);
+  const { data: timesArray } = useSWR<number[]>(hoveredStation ? `/api/shortest-times/${hoveredStation}` : null);
 
-  const isochronesMap = useRef<LRUCache<number, FeatureCollection<Polygon | MultiPolygon, { duration: number }>>>(new LRUCache({ max: 500 }));
+  const timesArrayMap = useRef<LRUCache<number, number[]>>(new LRUCache({ max: 500 }));
 
   useEffect(() => {
     if (map) return; // initialize map only once
@@ -29,8 +27,6 @@ const Home: NextPage = () => {
     });
 
     mapboxMap.on('load', () => {
-      setMap(mapboxMap);
-
       mapboxMap.addSource('stations', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] }
@@ -46,12 +42,79 @@ const Home: NextPage = () => {
 
 
       mapboxMap.addLayer({
+        id: 'iso-heatmap-300',
+        type: 'heatmap',
+        source: 'stations',
+        paint: {
+          'heatmap-radius': [
+            'interpolate',
+            ['exponential', 1.4],
+            ['zoom'],
+            4,
+            6,
+            12,
+            50
+          ],
+          'heatmap-intensity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            0,
+            1 / 300,
+            9,
+            3 / 300
+          ],
+          'heatmap-weight':
+            ['max', 0, ['-', 300, ['number', ['feature-state', 'duration'], 300]]],
+          'heatmap-color': [
+            'interpolate',
+            ['linear'],
+            ['heatmap-density'],
+            0.001,
+            'rgba(0,0,0,0)',
+            0.003,
+            'rgb(178,24,43)',
+            0.007,
+            'rgba(255,255,178, 0.4)',
+          ],
+        }
+      }, 'waterway-label');
+
+      mapboxMap.addLayer({
         id: 'stations',
         type: 'circle',
         source: 'stations',
         paint: {
-          'circle-radius': 5,
-          'circle-opacity': 0
+          'circle-radius': [
+            'interpolate',
+            ['exponential', 1.4],
+            ['zoom'],
+            4,
+            4,
+            12,
+            40
+          ],
+          "circle-blur": 0.5,
+          'circle-opacity': 0.7,
+          "circle-color": [
+            "interpolate",
+            ["linear"],
+            ["number", ["feature-state", "duration"], 301],
+            0,
+            "rgba(189,0,38,0.9)",
+            60,
+            "rgba(240,59,32,0.8)",
+            120,
+            "rgba(253,141,60,0.7)",
+            180,
+            "rgba(254,204,92,0.6)",
+            240,
+            "rgba(254,217,118, 0.5)",
+            300,
+            "rgba(255,255,178, 0.4)",
+            301,
+            'rgba(0, 0, 0, 0)'
+          ],
         }
       }, 'waterway-label');
 
@@ -67,7 +130,7 @@ const Home: NextPage = () => {
             "fill-color": [
               "interpolate",
               ["linear"],
-              ["get", "duration"],
+              ["number", ["get", "duration"], 300],
               0,
               "rgba(189,0,38,0.9)",
               60,
@@ -96,7 +159,7 @@ const Home: NextPage = () => {
             "line-color": [
               "interpolate",
               ["linear"],
-              ["get", "duration"],
+              ["number", ["get", "duration"], 300],
               0,
               "rgba(189,0,38,0.8)",
               60,
@@ -129,6 +192,7 @@ const Home: NextPage = () => {
         paint: {
           'text-color': "#110"
         }
+
       });
 
 
@@ -147,8 +211,26 @@ const Home: NextPage = () => {
           (mapboxMap.getSource('hoveredStation') as GeoJSONSource).setData({ type: 'FeatureCollection', features: [] });
         }
       })
+
+      setMap(mapboxMap);
     });
   }, [map]);
+
+  const fillFeatureStates = useCallback((map: mapboxgl.Map, data: number[]) => {
+    if (!stationsData) return;
+
+    map.removeFeatureState({ source: 'stations' });
+    for (let i = 0; i < data.length / 2; i++) {
+      try {
+        map.setFeatureState({ source: 'stations', id: data[i * 2] }, { duration: data[i * 2 + 1] });
+      } catch (error) {
+      }
+    }
+  }, [stationsData]);
+
+  const emptyFeatureStates = (map: mapboxgl.Map) => {
+    map.removeFeatureState({ source: 'stations' });
+  }
 
   useEffect(() => {
     if (map && stationsData?.stations) {

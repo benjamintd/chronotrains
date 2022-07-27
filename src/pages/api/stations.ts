@@ -3,7 +3,13 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "~/lib/prisma";
 
 export type StationsRes = {
-  stations: Array<Station & { _count: { isochrones: number } }>;
+  stations: Array<{
+    name: string;
+    longitudeE7: number;
+    latitudeE7: number;
+    id: number;
+    _count: { isochrones: number; timesDeparting: number };
+  }>;
 };
 
 export default async function handler(
@@ -16,7 +22,13 @@ export default async function handler(
         some: {},
       },
     },
-    include: { _count: { select: { isochrones: true, timesDeparting: true } } },
+    select: {
+      name: true,
+      longitudeE7: true,
+      latitudeE7: true,
+      id: true,
+      _count: { select: { isochrones: true, timesDeparting: true } },
+    },
   });
 
   stations = stations
