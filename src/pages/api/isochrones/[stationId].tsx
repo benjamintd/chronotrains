@@ -10,11 +10,12 @@ export default async function handler(
 ) {
   let isochrones = await prisma.isochrone.findMany({
     where: {
-      stationId: +(req.query.stationId as string)
+      stationId: +(req.query.stationId as string),
+      duration: { in: [60, 120, 180, 240, 300] }
     },
     orderBy: { duration: 'desc' }
   });
 
-  res.setHeader('Cache-Control', "stale-while-revalidate=86400");
+  res.setHeader('Cache-Control', "max-age=0, s-maxage=86400");
   return res.json({ stationId: +(req.query.stationId as string), geometry: { type: 'FeatureCollection', features: isochrones.map(iso => iso.geometry as any as Feature<Polygon | MultiPolygon, { duration: number }>) } });
 }
