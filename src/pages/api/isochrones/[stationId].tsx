@@ -1,8 +1,8 @@
-import { Isochrone, Station } from "@prisma/client";
+import { Feature, FeatureCollection, MultiPolygon, Polygon } from "@turf/turf";
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "~/lib/prisma";
 
-export type IsochronesRes = { isochrones: Array<Isochrone>, id: number };
+export type IsochronesRes = { stationId: number, geometry: FeatureCollection<Polygon | MultiPolygon, { duration: number }> } | null;
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,10 +12,9 @@ export default async function handler(
     where: {
       stationId: +(req.query.stationId as string)
     },
-    orderBy: {
-      duration: 'desc'
-    }
+    orderBy: { duration: 'desc' }
   });
 
-  return res.json({ isochrones, id: +(req.query.stationId as string) });
+  res.setHeader('Cache-Control', "stale-while-revalidate=86400");
+  return res.json({ stationId: +(req.query.stationId as string), geometry: { type: 'FeatureCollection', features: isochrones.map(iso => iso.geometry as any as Feature<Polygon | MultiPolygon, { duration: number }>) } });
 }

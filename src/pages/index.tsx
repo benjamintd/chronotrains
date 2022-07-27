@@ -11,7 +11,7 @@ const Home: NextPage = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const [hoveredStation, setHoveredStation] = useState<number | null>(null);
-
+  const [displayedIsochrones, setDisplayedIsochrones] = useState<number | null>(null);
   const { data: stationsData } = useSWR<StationsRes>('/api/stations');
   const { data: timesArray } = useSWR<number[]>(hoveredStation ? `/api/shortest-times/${hoveredStation}` : null);
 
@@ -214,7 +214,7 @@ const Home: NextPage = () => {
 
       setMap(mapboxMap);
     });
-  }, []);
+  }, [map]);
 
   const fillFeatureStates = useCallback((map: mapboxgl.Map, data: number[]) => {
     if (!stationsData) return;
@@ -253,20 +253,31 @@ const Home: NextPage = () => {
   }, [stationsData, map]);
 
   useEffect(() => {
+    if (displayedIsochrones === hoveredStation) {
+      return
+    }
     if (map) {
       if (hoveredStation) {
-        if (timesArrayMap.current.has(hoveredStation)) {
-          fillFeatureStates(map, timesArrayMap.current.get(hoveredStation)!);
-        } else if (timesArray) {
-          timesArrayMap.current.set(hoveredStation, timesArray);
-          fillFeatureStates(map, timesArray);
+        if (isochronesMap.current.has(hoveredStation)) {
+          (map.getSource('isochrones') as GeoJSONSource).setData(isochronesMap.current.get(hoveredStation)!);
+          setDisplayedIsochrones(hoveredStation);
+        } else if (isochronesData && isochronesData.stationId === hoveredStation) {
+          const fc = isochronesData.geometry as any as FeatureCollection<Polygon | MultiPolygon, { duration: number }>
+          isochronesMap.current.set(hoveredStation, fc);
+          (map.getSource('isochrones') as GeoJSONSource).setData(fc);
+          setDisplayedIsochrones(hoveredStation);
         }
-      } else {
-        emptyFeatureStates(map)
+
+      } else if (!hoveredStation) {
+        (map.getSource('isochrones') as GeoJSONSource).setData({
+          type: 'FeatureCollection',
+          features: []
+        });
+        setDisplayedIsochrones(null);
       }
     }
 
-  }, [timesArray, hoveredStation, map]);
+  }, [displayedIsochrones, isochronesData, hoveredStation, map]);
 
   return (
     <div className="w-screen h-screen">

@@ -15,7 +15,7 @@ import {
 } from "@turf/turf";
 import polygonClipping from "polygon-clipping";
 
-import { DirectTime, Station } from "@prisma/client";
+import { Station } from "@prisma/client";
 
 const MAX_DURATION = 300; // in minutes
 const TRANSITABLE_DISTANCE = 20; // kilometers
