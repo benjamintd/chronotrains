@@ -331,7 +331,7 @@ const InfoPanel = () => {
                           ))}
                         </div>
 
-                        <p className="mt-12">
+                        <p className="my-12">
                           Any questions? Reach out to me on Twitter: {" "}
                           <a href="https://www.twitter.com/_benjamintd">
                             @_benjamintd
