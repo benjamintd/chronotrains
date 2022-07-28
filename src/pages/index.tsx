@@ -3,7 +3,6 @@ import mapboxgl, { GeoJSONSource, MapMouseEvent } from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import useSWR, { useSWRConfig } from "swr";
-import { StationsRes } from "./api/stations";
 import { IsochronesRes } from "./api/isochrones/[stationId]";
 import { FeatureCollection, MultiPolygon, Polygon } from "@turf/turf";
 
@@ -35,7 +34,7 @@ const Home: NextPage = () => {
 
       mapboxMap.addSource("stations", {
         type: "vector",
-        url: 'mapbox://benjamintd.4cgn60a2',
+        url: "mapbox://benjamintd.4cgn60a2",
       });
 
       mapboxMap.addSource("isochrones", {
@@ -129,25 +128,23 @@ const Home: NextPage = () => {
         "waterway-label"
       );
 
-      mapboxMap.addLayer(
-        {
-          id: "stations-symbol",
-          type: "symbol",
-          source: "stations",
-          "source-layer": "stations-apro5d",
-          layout: {
-            "text-field": ["get", "name"],
-            "text-offset": [0, -1.5],
-            "text-size": 10,
-            "text-font": ["DIN Pro Medium", "Open Sans Regular"],
-            "icon-image": "dot-11",
-          },
-          paint: {
-            "text-color": "#333",
-          },
-          minzoom: 7
-        }
-      );
+      mapboxMap.addLayer({
+        id: "stations-symbol",
+        type: "symbol",
+        source: "stations",
+        "source-layer": "stations-apro5d",
+        layout: {
+          "text-field": ["get", "name"],
+          "text-offset": [0, -1.5],
+          "text-size": 10,
+          "text-font": ["DIN Pro Medium", "Open Sans Regular"],
+          "icon-image": "dot-11",
+        },
+        paint: {
+          "text-color": "#333",
+        },
+        minzoom: 7,
+      });
 
       mapboxMap.addLayer({
         id: "hoveredStation",
@@ -163,8 +160,6 @@ const Home: NextPage = () => {
           "text-color": "#110",
         },
       });
-
-
 
       mapboxMap.on("mousemove", (e: MapMouseEvent) => {
         const features = mapboxMap.queryRenderedFeatures(
@@ -297,7 +292,9 @@ const InfoPanel = () => {
                       </p>
                       <p>
                         It is inspired by the great{" "}
-                        <a href="https://direkt.bahn.guru/">Direkt Bahn Guru</a>. The data is based off of this site, which sources it from the Deutsch Bahn.
+                        <a href="https://direkt.bahn.guru/">Direkt Bahn Guru</a>
+                        . The data is based off of this site, which sources it
+                        from the Deutsch Bahn.
                       </p>
                       <p>
                         Hover your mouse over a station to see the isochrones
@@ -306,6 +303,9 @@ const InfoPanel = () => {
                       <p>
                         This assumes interchanges are 20 minutes, and transit
                         between stations is a little over walking speed.
+                        Therefore, these should be interpreted as optimal travel
+                        times. The journeys  might not exist
+                        when taking into account real interchange times.
                       </p>
                       <div>
                         <span className="font-mono text-sm text-gray-900">
@@ -317,7 +317,7 @@ const InfoPanel = () => {
                             "rgba(253,141,60,0.9)",
                             "rgba(254,204,92,1)",
                             "rgba(254,217,118,1)",
-                            "rgba(255,255,178, 1)"
+                            "rgba(255,255,178, 1)",
                           ].map((color, i) => (
                             <div className="flex flex-col items-center" key={i}>
                               <div
@@ -332,12 +332,11 @@ const InfoPanel = () => {
                         </div>
 
                         <p className="mt-12">
-                          Any questions? Reach out to{" "}
+                          Any questions? Reach out to me on Twitter: {" "}
                           <a href="https://www.twitter.com/_benjamintd">
                             @_benjamintd
-
                             <svg
-                              className='inline ml-2 -mt-1'
+                              className="inline ml-2 -mt-1"
                               xmlns="http://www.w3.org/2000/svg"
                               width="1em"
                               height="1em"
@@ -352,7 +351,6 @@ const InfoPanel = () => {
                         </p>
                       </div>
                     </div>
-                    {/* /End replace */}
                   </div>
                 </div>
               </div>
