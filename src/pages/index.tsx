@@ -128,6 +128,25 @@ const Home: NextPage = () => {
         "waterway-label"
       );
 
+      mapboxMap.addLayer(
+        {
+          id: "stations-symbol",
+          type: "symbol",
+          source: "stations",
+          layout: {
+            "text-field": ["get", "name"],
+            "text-offset": [0, -1.5],
+            "text-size": 10,
+            "text-font": ["DIN Pro Medium", "Open Sans Regular"],
+            "icon-image": "dot-11",
+          },
+          paint: {
+            "text-color": "#333",
+          },
+          minzoom: 7
+        }
+      );
+
       mapboxMap.addLayer({
         id: "hoveredStation",
         type: "symbol",
@@ -142,6 +161,8 @@ const Home: NextPage = () => {
           "text-color": "#110",
         },
       });
+
+
 
       mapboxMap.on("mousemove", (e: MapMouseEvent) => {
         const features = mapboxMap.queryRenderedFeatures(
@@ -198,7 +219,6 @@ const Home: NextPage = () => {
     if (map) {
       if (hoveredStation) {
         const cached = cache.get(`/api/isochrones/${hoveredStation}`);
-        console.log(cached);
         if (cached) {
           (map.getSource("isochrones") as GeoJSONSource).setData(
             cached.geometry
