@@ -14,6 +14,9 @@ const Home: NextPage = () => {
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const [hoveredStation, setHoveredStation] = useState<number | null>(null);
   const [selectedStation, setSelectedStation] = useState<number | null>(null);
+  const [selectedStationName, setSelectedStationName] = useState<string | null>(
+    null
+  );
   const [displayedIsochrones, setDisplayedIsochrones] = useState<number | null>(
     null
   );
@@ -21,7 +24,6 @@ const Home: NextPage = () => {
     hoveredStation ? `/isochrones/${hoveredStation}.json` : null
   );
 
-  console.log(isochronesData)
   const { cache } = useSWRConfig();
 
   useEffect(() => {
@@ -46,6 +48,10 @@ const Home: NextPage = () => {
         data: { type: "FeatureCollection", features: [] },
       });
       mapboxMap.addSource("hoveredStation", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      mapboxMap.addSource("selectedStation", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       });
@@ -165,6 +171,20 @@ const Home: NextPage = () => {
         },
       });
 
+      mapboxMap.addLayer({
+        id: "selectedStation",
+        type: "symbol",
+        source: "selectedStation",
+        layout: {
+          "text-field": ["get", "name"],
+          "text-offset": [0, -1.5],
+          "text-font": ["DIN Pro Bold", "Open Sans Bold"],
+          "icon-image": "dot-11",
+        },
+        paint: {
+          "text-color": "#110",
+        },
+      });
     });
   }, [map]);
 
@@ -184,9 +204,7 @@ const Home: NextPage = () => {
           map.getCanvas().style.cursor = "crosshair";
           const station = features[features.length - 1]; // the largest according to the API scoring
           setHoveredStation(station.properties!.id as number);
-          (map.getSource("hoveredStation") as GeoJSONSource).setData(
-            station
-          );
+          (map.getSource("hoveredStation") as GeoJSONSource).setData(station);
         } else {
           map.getCanvas().style.cursor = "default";
           setHoveredStation(null);
@@ -195,7 +213,7 @@ const Home: NextPage = () => {
             features: [],
           });
         }
-      }
+      };
 
       const onClick = (e: MapMouseEvent) => {
         const features = map.queryRenderedFeatures(
@@ -210,9 +228,13 @@ const Home: NextPage = () => {
         if (features.length) {
           const station = features[features.length - 1]; // the largest according to the API scoring
           setSelectedStation(station.properties!.id as number);
+          (map.getSource("selectedStation") as GeoJSONSource).setData(station);
+
+          setSelectedStationName(station.properties!.name as string);
+
           map.getCanvas().style.cursor = "default";
         }
-      }
+      };
 
       map.on("mousemove", onMouseMove);
       map.on("click", onClick);
@@ -220,29 +242,41 @@ const Home: NextPage = () => {
       return () => {
         map.off("mousemove", onMouseMove);
         map.off("click", onClick);
-      }
+      };
     }
   }, [map, setHoveredStation, setSelectedStation, selectedStation]);
 
-  const setMapIsochronesData = useCallback((station: number, map: mapboxgl.Map, isochronesData: IsochronesRes | undefined) => {
-    const cached = cache.get(`/api/isochrones/${station}`);
-    if (cached) {
-      (map.getSource("isochrones") as GeoJSONSource).setData(
-        cached.geometry
-      );
-      setDisplayedIsochrones(station);
-    } else if (
-      isochronesData &&
-      isochronesData.stationId === station
-    ) {
-      const fc = isochronesData.geometry as any as FeatureCollection<
-        Polygon | MultiPolygon,
-        { duration: number }
-      >;
-      (map.getSource("isochrones") as GeoJSONSource).setData(fc);
-      setDisplayedIsochrones(station);
+  useEffect(() => {
+    if (map && !selectedStation) {
+      setSelectedStationName(null);
+      (map.getSource("selectedStation") as GeoJSONSource).setData({
+        type: "FeatureCollection",
+        features: [],
+      });
     }
-  }, [cache, setDisplayedIsochrones]);
+  }, [map, selectedStation, setSelectedStationName]);
+
+  const setMapIsochronesData = useCallback(
+    (
+      station: number,
+      map: mapboxgl.Map,
+      isochronesData: IsochronesRes | undefined
+    ) => {
+      const cached = cache.get(`/api/isochrones/${station}`);
+      if (cached) {
+        (map.getSource("isochrones") as GeoJSONSource).setData(cached.geometry);
+        setDisplayedIsochrones(station);
+      } else if (isochronesData && isochronesData.stationId === station) {
+        const fc = isochronesData.geometry as any as FeatureCollection<
+          Polygon | MultiPolygon,
+          { duration: number }
+        >;
+        (map.getSource("isochrones") as GeoJSONSource).setData(fc);
+        setDisplayedIsochrones(station);
+      }
+    },
+    [cache, setDisplayedIsochrones]
+  );
 
   useEffect(() => {
     if (displayedIsochrones === hoveredStation) {
@@ -261,18 +295,57 @@ const Home: NextPage = () => {
         setMapIsochronesData(selectedStation, map, isochronesData);
       }
     }
-  }, [displayedIsochrones, isochronesData, hoveredStation, map, cache, selectedStation, setMapIsochronesData]);
+  }, [
+    displayedIsochrones,
+    isochronesData,
+    hoveredStation,
+    map,
+    cache,
+    selectedStation,
+    setMapIsochronesData,
+  ]);
 
   return (
     <div className="relative w-screen h-screen">
-      <InfoPanel />
       <div className="w-full h-full" ref={mapContainer} />
+      {selectedStation && selectedStationName && (
+        <button
+          className="absolute top-0 left-0 flex items-center px-4 py-2 m-4 bg-white border border-gray-600 rounded-full"
+          onClick={() => setSelectedStation(null)}
+        >
+          <svg
+            className="inline mr-2"
+            xmlns="http://www.w3.org/2000/svg"
+            width="1em"
+            height="1em"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill="currentColor"
+              d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5s5 2.24 5 5s-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3s3-1.34 3-3s-1.34-3-3-3z"
+            ></path>
+          </svg>{" "}
+          {selectedStationName}
+          <svg
+            className="inline ml-4 -mb-px text-gray-600"
+            xmlns="http://www.w3.org/2000/svg"
+            width="1em"
+            height="1em"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill="currentColor"
+              d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6Z"
+            ></path>
+          </svg>
+        </button>
+      )}
+      <InfoPanel />
     </div>
   );
 };
 
 /* This example requires Tailwind CSS v2.0+ */
-
 
 const InfoPanel = () => {
   const [open, setOpen] = useState(true);
@@ -343,8 +416,8 @@ const InfoPanel = () => {
                         This assumes interchanges are 20 minutes, and transit
                         between stations is a little over walking speed.
                         Therefore, these should be interpreted as optimal travel
-                        times. The journeys  might not exist
-                        when taking into account real interchange times.
+                        times. The journeys might not exist when taking into
+                        account real interchange times.
                       </p>
                       <div>
                         <span className="font-mono text-sm text-gray-900">
@@ -371,7 +444,7 @@ const InfoPanel = () => {
                         </div>
 
                         <p className="my-12">
-                          Any questions? Reach out to me on Twitter: {" "}
+                          Any questions? Reach out to me on Twitter:{" "}
                           <a href="https://www.twitter.com/_benjamintd">
                             @_benjamintd
                             <svg

@@ -24,14 +24,10 @@ export const main = async () => {
   while (keepGoing) {
     const unfetched = await prisma.$queryRaw<Station[]>`
       select stations.id, stations.latitude_e7 as "latitudeE7", stations.longitude_e7 as "longitudeE7", stations.name, stations.direct_times_fetched as "directTimesFetched" from stations
-      join direct_times on stations.id = direct_times.to_station_id
       where direct_times_fetched = false
-      and distance_km > 30
       and stations.id not in (${Prisma.join(skipList)})
-      group by stations.id, stations.latitude_e7, stations.longitude_e7, stations.name, stations.direct_times_fetched
-      order by max(direct_times.distance_km * direct_times.distance_km / direct_times.duration) desc
-      limit 5;
-    `;
+      limit 10;
+      `;
 
     if (unfetched.length === 0) {
       keepGoing = false;
