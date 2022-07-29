@@ -16,8 +16,10 @@ const Home: NextPage = () => {
     null
   );
   const { data: isochronesData } = useSWR<IsochronesRes>(
-    hoveredStation ? `/api/isochrones/${hoveredStation}` : null
+    hoveredStation ? `/isochrones/${hoveredStation}.json` : null
   );
+
+  console.log(isochronesData)
   const { cache } = useSWRConfig();
 
   useEffect(() => {
