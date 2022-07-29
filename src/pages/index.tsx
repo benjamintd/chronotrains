@@ -1,10 +1,11 @@
 import type { NextPage } from "next";
 import mapboxgl, { GeoJSONSource, MapMouseEvent } from "mapbox-gl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Fragment, useCallback } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import useSWR, { useSWRConfig } from "swr";
 import { IsochronesRes } from "./api/isochrones/[stationId]";
 import { FeatureCollection, MultiPolygon, Polygon } from "@turf/turf";
+import { Transition } from "@headlessui/react";
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoiYmVuamFtaW50ZCIsImEiOiJjaW83enIwNjYwMnB1dmlsejN6cDBzbm93In0.0ZOGwSLp8OjW6vCaEKYFng";
@@ -12,6 +13,7 @@ const Home: NextPage = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const [hoveredStation, setHoveredStation] = useState<number | null>(null);
+  const [selectedStation, setSelectedStation] = useState<number | null>(null);
   const [displayedIsochrones, setDisplayedIsochrones] = useState<number | null>(
     null
   );
@@ -163,8 +165,13 @@ const Home: NextPage = () => {
         },
       });
 
-      mapboxMap.on("mousemove", (e: MapMouseEvent) => {
-        const features = mapboxMap.queryRenderedFeatures(
+    });
+  }, [map]);
+
+  useEffect(() => {
+    if (map) {
+      const onMouseMove = (e: MapMouseEvent) => {
+        const features = map.queryRenderedFeatures(
           [
             [e.point.x - 10, e.point.y - 10],
             [e.point.x + 10, e.point.y + 10],
@@ -173,57 +180,88 @@ const Home: NextPage = () => {
             layers: ["stations"],
           }
         );
-        if (features.length && mapboxMap.getSource("hoveredStation")) {
-          mapboxMap.getCanvas().style.cursor = "crosshair";
+        if (features.length && map.getSource("hoveredStation")) {
+          map.getCanvas().style.cursor = "crosshair";
           const station = features[features.length - 1]; // the largest according to the API scoring
           setHoveredStation(station.properties!.id as number);
-          (mapboxMap.getSource("hoveredStation") as GeoJSONSource).setData(
+          (map.getSource("hoveredStation") as GeoJSONSource).setData(
             station
           );
         } else {
-          mapboxMap.getCanvas().style.cursor = "default";
+          map.getCanvas().style.cursor = "default";
           setHoveredStation(null);
-          (mapboxMap.getSource("hoveredStation") as GeoJSONSource).setData({
+          (map.getSource("hoveredStation") as GeoJSONSource).setData({
             type: "FeatureCollection",
             features: [],
           });
         }
-      });
-    });
-  }, [map]);
+      }
+
+      const onClick = (e: MapMouseEvent) => {
+        const features = map.queryRenderedFeatures(
+          [
+            [e.point.x - 10, e.point.y - 10],
+            [e.point.x + 10, e.point.y + 10],
+          ],
+          {
+            layers: ["stations"],
+          }
+        );
+        if (features.length) {
+          const station = features[features.length - 1]; // the largest according to the API scoring
+          setSelectedStation(station.properties!.id as number);
+          map.getCanvas().style.cursor = "default";
+        }
+      }
+
+      map.on("mousemove", onMouseMove);
+      map.on("click", onClick);
+
+      return () => {
+        map.off("mousemove", onMouseMove);
+        map.off("click", onClick);
+      }
+    }
+  }, [map, setHoveredStation, setSelectedStation, selectedStation]);
+
+  const setMapIsochronesData = useCallback((station: number, map: mapboxgl.Map, isochronesData: IsochronesRes | undefined) => {
+    const cached = cache.get(`/api/isochrones/${station}`);
+    if (cached) {
+      (map.getSource("isochrones") as GeoJSONSource).setData(
+        cached.geometry
+      );
+      setDisplayedIsochrones(station);
+    } else if (
+      isochronesData &&
+      isochronesData.stationId === station
+    ) {
+      const fc = isochronesData.geometry as any as FeatureCollection<
+        Polygon | MultiPolygon,
+        { duration: number }
+      >;
+      (map.getSource("isochrones") as GeoJSONSource).setData(fc);
+      setDisplayedIsochrones(station);
+    }
+  }, [cache, setDisplayedIsochrones]);
 
   useEffect(() => {
     if (displayedIsochrones === hoveredStation) {
       return;
     }
     if (map) {
-      if (hoveredStation) {
-        const cached = cache.get(`/api/isochrones/${hoveredStation}`);
-        if (cached) {
-          (map.getSource("isochrones") as GeoJSONSource).setData(
-            cached.geometry
-          );
-          setDisplayedIsochrones(hoveredStation);
-        } else if (
-          isochronesData &&
-          isochronesData.stationId === hoveredStation
-        ) {
-          const fc = isochronesData.geometry as any as FeatureCollection<
-            Polygon | MultiPolygon,
-            { duration: number }
-          >;
-          (map.getSource("isochrones") as GeoJSONSource).setData(fc);
-          setDisplayedIsochrones(hoveredStation);
-        }
-      } else if (!hoveredStation) {
+      if (hoveredStation && !selectedStation) {
+        setMapIsochronesData(hoveredStation, map, isochronesData);
+      } else if (!hoveredStation && !selectedStation) {
         (map.getSource("isochrones") as GeoJSONSource).setData({
           type: "FeatureCollection",
           features: [],
         });
         setDisplayedIsochrones(null);
+      } else if (selectedStation) {
+        setMapIsochronesData(selectedStation, map, isochronesData);
       }
     }
-  }, [displayedIsochrones, isochronesData, hoveredStation, map, cache]);
+  }, [displayedIsochrones, isochronesData, hoveredStation, map, cache, selectedStation, setMapIsochronesData]);
 
   return (
     <div className="relative w-screen h-screen">
@@ -234,8 +272,7 @@ const Home: NextPage = () => {
 };
 
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+
 
 const InfoPanel = () => {
   const [open, setOpen] = useState(true);
