@@ -9,6 +9,7 @@ import { Transition } from "@headlessui/react";
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoiYmVuamFtaW50ZCIsImEiOiJjaW83enIwNjYwMnB1dmlsejN6cDBzbm93In0.0ZOGwSLp8OjW6vCaEKYFng";
+
 const Home: NextPage = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
@@ -406,7 +407,7 @@ const InfoPanel = () => {
                         It is inspired by the great{" "}
                         <a href="https://direkt.bahn.guru/">Direkt Bahn Guru</a>
                         . The data is based off of this site, which sources it
-                        from the Deutsch Bahn.
+                        from the Deutsche Bahn.
                       </p>
                       <p>
                         Hover your mouse over a station to see the isochrones
