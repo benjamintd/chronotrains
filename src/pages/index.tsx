@@ -2,10 +2,11 @@ import type { NextPage } from "next";
 import mapboxgl, { GeoJSONSource, MapMouseEvent } from "mapbox-gl";
 import { useEffect, useRef, useState, Fragment, useCallback } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
-import useSWR, { useSWRConfig } from "swr";
-import { IsochronesRes } from "./api/isochrones/[stationId]";
+import { useSWRConfig } from "swr";
+import { IsochronesRes } from "./isochrones/[stationId]";
 import { FeatureCollection, MultiPolygon, Polygon } from "@turf/turf";
 import { Transition } from "@headlessui/react";
+import useIsochronesData from "~/lib/useIsochronesData";
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoiYmVuamFtaW50ZCIsImEiOiJjaW83enIwNjYwMnB1dmlsejN6cDBzbm93In0.0ZOGwSLp8OjW6vCaEKYFng";
@@ -21,11 +22,8 @@ const Home: NextPage = () => {
   const [displayedIsochrones, setDisplayedIsochrones] = useState<number | null>(
     null
   );
-  const { data: isochronesData } = useSWR<IsochronesRes>(
-    hoveredStation ? `/isochrones/${hoveredStation}.json` : null
-  );
+  const isochronesData = useIsochronesData(hoveredStation);
 
-  const { cache } = useSWRConfig();
 
   useEffect(() => {
     if (map) return; // initialize map only once
@@ -263,11 +261,7 @@ const Home: NextPage = () => {
       map: mapboxgl.Map,
       isochronesData: IsochronesRes | undefined
     ) => {
-      const cached = cache.get(`/api/isochrones/${station}`);
-      if (cached) {
-        (map.getSource("isochrones") as GeoJSONSource).setData(cached.geometry);
-        setDisplayedIsochrones(station);
-      } else if (isochronesData && isochronesData.stationId === station) {
+      if (isochronesData && isochronesData.stationId === station) {
         const fc = isochronesData.geometry as any as FeatureCollection<
           Polygon | MultiPolygon,
           { duration: number }
@@ -276,7 +270,7 @@ const Home: NextPage = () => {
         setDisplayedIsochrones(station);
       }
     },
-    [cache, setDisplayedIsochrones]
+    [setDisplayedIsochrones]
   );
 
   useEffect(() => {
@@ -301,7 +295,6 @@ const Home: NextPage = () => {
     isochronesData,
     hoveredStation,
     map,
-    cache,
     selectedStation,
     setMapIsochronesData,
   ]);

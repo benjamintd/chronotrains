@@ -58,7 +58,7 @@ const computeIsochrones = async (
         Math.min(
           travelTimes.get(t.toStationId) || Infinity,
           travelTimes.get(t.fromStationId)! +
-            (interchanges === 0 ? 0 : INTERCHANGE_TIME) +
+            (interchanges === 0 ? 0 : INTERCHANGE_TIME) + // @todo add a condition that does not add an extra interchange time for a walkable (DirectTimeSource computed) interchange
             t.duration
         )
       )
@@ -131,6 +131,7 @@ const computeIsochrones = async (
 
     simplify(isoGeometry, { tolerance: 0.005, mutate: true });
 
+    // trim coordinates
     coordEach(isoGeometry, (p) => {
       p[0] = Math.round(p[0] * 1e4) / 1e4;
       p[1] = Math.round(p[1] * 1e4) / 1e4;
@@ -202,26 +203,6 @@ const main = async () => {
         console.error("could not compute isochrones for ", stationId);
       }
     }
-  }
-};
-
-const trimAll = async () => {
-  const isochrones = await prisma.isochrone.findMany({});
-  for (let iso of isochrones) {
-    coordEach(iso.geometry as any, (p) => {
-      p[0] = Math.round(p[0] * 1e4) / 1e4;
-      p[1] = Math.round(p[1] * 1e4) / 1e4;
-    });
-
-    await prisma.isochrone.update({
-      where: {
-        stationId_duration: {
-          stationId: iso.stationId,
-          duration: iso.duration,
-        },
-      },
-      data: { geometry: iso.geometry as any },
-    });
   }
 };
 
