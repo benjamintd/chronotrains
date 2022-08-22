@@ -2,14 +2,14 @@ import type { NextPage } from "next";
 import mapboxgl, { GeoJSONSource, MapMouseEvent } from "mapbox-gl";
 import { useEffect, useRef, useState, Fragment, useCallback } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useSWRConfig } from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { IsochronesRes } from "./isochrones/[stationId]";
 import { FeatureCollection, MultiPolygon, Polygon } from "@turf/turf";
 import { Transition } from "@headlessui/react";
 import useIsochronesData from "~/lib/useIsochronesData";
+import { useRouter } from "next/router";
 
-mapboxgl.accessToken =
-  "pk.eyJ1IjoiYmVuamFtaW50ZCIsImEiOiJjaW83enIwNjYwMnB1dmlsejN6cDBzbm93In0.0ZOGwSLp8OjW6vCaEKYFng";
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
 const Home: NextPage = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -24,12 +24,11 @@ const Home: NextPage = () => {
   );
   const isochronesData = useIsochronesData(hoveredStation);
 
-
   useEffect(() => {
     if (map) return; // initialize map only once
     let mapboxMap = new mapboxgl.Map({
       container: mapContainer.current!,
-      style: "mapbox://styles/benjamintd/cl64tnf2g000814pdk237r6ij",
+      style: "mapbox://styles/mapbox/light-v9",
       center: [2, 45],
       zoom: 4,
     });
@@ -39,7 +38,12 @@ const Home: NextPage = () => {
 
       mapboxMap.addSource("stations", {
         type: "vector",
-        url: "mapbox://benjamintd.4cgn60a2",
+        tiles: [`${window.location.protocol}//${window.location.host}/api/tiles/{z}/{x}/{y}.pbf`],
+      });
+
+      mapboxMap.addSource("countries", {
+        type: "vector",
+        url: "mapbox://mapbox.country-boundaries-v1",
       });
 
       mapboxMap.addSource("isochrones", {
@@ -57,10 +61,83 @@ const Home: NextPage = () => {
 
       mapboxMap.addLayer(
         {
+          id: "country-boundaries",
+          type: "fill",
+          source: "countries",
+          "source-layer": "country_boundaries",
+          filter: [
+            "match",
+            ["get", "iso_3166_1_alpha_3"],
+            ["FRA"],
+            true,
+            ["ESP"],
+            true,
+            ["PRT"],
+            true,
+            ["GBR"],
+            true,
+            ["DEU"],
+            true,
+            ["FIN"],
+            true,
+            ["SWE"],
+            true,
+            ["NOR"],
+            true,
+            ["BEL"],
+            true,
+            ["LUX"],
+            true,
+            ["DNK"],
+            true,
+            ["NLD"],
+            true,
+            ["ITA"],
+            true,
+            ["CHE"],
+            true,
+            ["AUT"],
+            true,
+            ["POL"],
+            true,
+            ["CZE"],
+            true,
+            ["SVK"],
+            true,
+            ["SVN"],
+            true,
+            ["HUN"],
+            true,
+            ["HRV"],
+            true,
+            ["UKR"],
+            true,
+            ["MDA"],
+            true,
+            ["ROU"],
+            true,
+            ["BGR"],
+            true,
+            ["IRL"],
+            true,
+            ["GRC"],
+            true,
+            ["LTU"],
+            true,
+            false,
+          ],
+          layout: {},
+          paint: { "fill-color": "hsl(0, 0%, 100%)" },
+        },
+        'water shadow'
+      );
+
+      mapboxMap.addLayer(
+        {
           id: "stations",
           type: "circle",
           source: "stations",
-          "source-layer": "stations-apro5d",
+          "source-layer": "stations",
           paint: {
             "circle-radius": 5,
             "circle-opacity": 0,

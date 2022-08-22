@@ -15,14 +15,14 @@ import {
 } from "@turf/turf";
 import polygonClipping from "polygon-clipping";
 
-import { Station } from "@prisma/client";
+import { DirectTimeSource, Station } from "@prisma/client";
 
 const MAX_DURATION = 300; // in minutes
 const TRANSITABLE_DISTANCE = 20; // kilometers
 const TRANSIT_SPEED = 0.15; // kilometers per minute
 const MAX_INTERCHANGE = 4;
 const INTERCHANGE_TIME = 20; // minutes
-const ISOCHRONE_TIMES = [30, 60, 90, 120, 180, 240, 300];
+const ISOCHRONE_TIMES = [60, 120, 180, 240, 300];
 const BUFFER_STEPS = 20;
 
 const stationToPoint = (s: Station) =>
@@ -34,6 +34,7 @@ const computeIsochrones = async (
     duration: number;
     fromStationId: number;
     toStationId: number;
+    source: DirectTimeSource | null;
   }[],
   stationsMap: Map<number, Station>
 ) => {
@@ -50,15 +51,15 @@ const computeIsochrones = async (
         !visitedStations.has(t.toStationId)
     );
 
-    // @todo we might want to add the "closeby" stations to the graph and create direct times from bike times
-
     times.forEach((t) =>
       travelTimes.set(
         t.toStationId,
         Math.min(
           travelTimes.get(t.toStationId) || Infinity,
           travelTimes.get(t.fromStationId)! +
-            (interchanges === 0 ? 0 : INTERCHANGE_TIME) + // @todo add a condition that does not add an extra interchange time for a walkable (DirectTimeSource computed) interchange
+            (interchanges === 0 || t.source === DirectTimeSource.computed // source "computed" is reserved for local transit (9kph), for which we only want to add one interchange time, not 2.
+              ? 0
+              : INTERCHANGE_TIME) +
             t.duration
         )
       )
@@ -183,7 +184,12 @@ const fetchStationsWithNoIsochrones = async () => {
 const main = async () => {
   let keepGoing = true;
   const directTimes = await prisma.directTime.findMany({
-    select: { fromStationId: true, toStationId: true, duration: true },
+    select: {
+      fromStationId: true,
+      toStationId: true,
+      duration: true,
+      source: true,
+    },
   });
 
   const stations = await prisma.station.findMany({});
