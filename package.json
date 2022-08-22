@@ -6,7 +6,7 @@
     "start": "next start",
     "db:create-migration": "dotenv -c local -- prisma migrate dev --create-only",
     "db:migrate-dev": "dotenv -c local -- prisma migrate dev",
-    "script": "npx dotenv -c prod -- ts-node",
+    "script": "npx dotenv -c prod -- node -r ts-node/register",
     "postinstall": "prisma generate"
   },
   "dependencies": {

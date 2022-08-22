@@ -115,15 +115,17 @@ const computeIsochrones = async (
       )
     );
 
+    simplify(fc, { tolerance: 0.005, mutate: true });
+
     const geoms: polygonClipping.Geom[] = [];
     geomEach(fc, (geom) => {
       geoms.push(geom.coordinates as polygonClipping.Geom);
     });
 
-    const unioned = polygonClipping.union(
-      isoGeometry.geometry.coordinates as polygonClipping.Geom,
-      ...geoms
-    );
+    geoms.push(isoGeometry.geometry.coordinates as polygonClipping.Geom);
+
+    const unioned = polygonClipping.union(geoms[0], ...geoms);
+
     if (unioned.length === 1) {
       isoGeometry = polygon(unioned[0], { duration: maxTime });
     } else {
@@ -141,27 +143,34 @@ const computeIsochrones = async (
     isochrones.push(clone(isoGeometry));
   }
 
-  isochrones.forEach(
-    async (iso) =>
-      await prisma.isochrone.upsert({
-        where: {
-          stationId_duration: {
+  const startInsert = performance.now();
+
+  await Promise.all(
+    isochrones.map(
+      async (iso) =>
+        await prisma.isochrone.upsert({
+          where: {
+            stationId_duration: {
+              stationId,
+              duration: iso.properties!.duration,
+            },
+          },
+          create: {
             stationId,
             duration: iso.properties!.duration,
+            geometry: iso as any,
           },
-        },
-        create: {
-          stationId,
-          duration: iso.properties!.duration,
-          geometry: iso as any,
-        },
-        update: {
-          stationId,
-          duration: iso.properties!.duration,
-          geometry: iso as any,
-        },
-      })
+          update: {
+            stationId,
+            duration: iso.properties!.duration,
+            geometry: iso as any,
+          },
+        })
+    )
   );
+
+  const endInsert = performance.now();
+  console.log(endInsert - startInsert, "ms to insert");
 };
 
 const fetchStationsWithNoIsochrones = async () => {
@@ -174,10 +183,11 @@ const fetchStationsWithNoIsochrones = async () => {
     ORDER BY max_speed desc
   )
   SELECT id from s
-  LEFT JOIN isochrones on s.id = isochrones.station_id
-  WHERE isochrones.station_id is null
+  LIMIT 10
+  -- LEFT JOIN isochrones on s.id = isochrones.station_id
+  -- WHERE isochrones.station_id is null
     `;
-  console.log(stations.length);
+
   return stations.map((s) => s.id);
 };
 
@@ -197,16 +207,16 @@ const main = async () => {
 
   while (keepGoing) {
     const stations = await fetchStationsWithNoIsochrones();
-    if (stations.length === 0) {
-      keepGoing = false;
-    }
+    // if (stations.length === 0) {
+    keepGoing = false;
+    // }
     for (let stationId of stations) {
       try {
         await computeIsochrones(stationId, directTimes, stationsMap).then(() =>
           console.log(stationId)
         );
       } catch (error) {
-        console.error("could not compute isochrones for ", stationId);
+        console.error("could not compute isochrones for ", stationId, error);
       }
     }
   }
