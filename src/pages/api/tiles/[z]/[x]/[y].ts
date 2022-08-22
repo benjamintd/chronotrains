@@ -7,7 +7,6 @@ export default async function handler(
 ) {
   let { z, x, y } = req.query as { [key: string]: string };
 
-  console.log(z, x, y);
   if (!z || !x || !y) {
     return res.status(400).json({ error: "Missing z, x, or y" });
   }
