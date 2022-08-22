@@ -1,4 +1,4 @@
-import type { NextPage } from "next";
+import type { GetStaticProps, NextPage } from "next";
 import mapboxgl, { GeoJSONSource, MapMouseEvent } from "mapbox-gl";
 import { useEffect, useRef, useState, Fragment, useCallback } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -7,6 +7,8 @@ import { FeatureCollection, MultiPolygon, Polygon } from "@turf/turf";
 import { Transition } from "@headlessui/react";
 import useIsochronesData from "~/lib/useIsochronesData";
 import useStationsFC from "~/lib/useStationsFC";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { Trans, useTranslation } from "next-i18next";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
@@ -407,6 +409,7 @@ const Home: NextPage = () => {
 
 const InfoPanel = () => {
   const [open, setOpen] = useState(true);
+  const { t } = useTranslation();
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -426,14 +429,14 @@ const InfoPanel = () => {
                 <div className="flex flex-col h-full py-6 overflow-y-scroll bg-white shadow-xl">
                   <div className="px-4 sm:px-6">
                     <div className="flex items-start justify-between">
-                      <h1> How far can you go by train in 5h?</h1>
+                      <h1>{t("title")}</h1>
                       <div className="flex items-center ml-3 h-7">
                         <button
                           type="button"
                           className="text-gray-400 bg-white rounded-md hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                           onClick={() => setOpen(false)}
                         >
-                          <span className="sr-only">Close panel</span>
+                          <span className="sr-only">{t("close")}</span>
                           <svg
                             className="w-6 h-6"
                             xmlns="http://www.w3.org/2000/svg"
@@ -454,32 +457,23 @@ const InfoPanel = () => {
                     </div>
                   </div>
                   <div className="relative flex-1 px-4 mt-6 sm:px-6">
-                    {/* Replace with your content */}
                     <div className="absolute inset-0 px-4 sm:px-6">
+                      <p>{t("intro")}</p>
                       <p>
-                        This map shows you how far you can travel from each
-                        station in Europe in less than 5 hours.
+                        <Trans i18nKey="credits">
+                          It is inspired by the great
+                          <a href="https://direkt.bahn.guru/">
+                            Direkt Bahn Guru
+                          </a>
+                          . The data is based off of this site, which sources it
+                          from the Deutsche Bahn.
+                        </Trans>
                       </p>
-                      <p>
-                        It is inspired by the great{" "}
-                        <a href="https://direkt.bahn.guru/">Direkt Bahn Guru</a>
-                        . The data is based off of this site, which sources it
-                        from the Deutsche Bahn.
-                      </p>
-                      <p>
-                        Hover your mouse over a station to see the isochrones
-                        from that city.
-                      </p>
-                      <p>
-                        This assumes interchanges are 20 minutes, and transit
-                        between stations is a little over walking speed.
-                        Therefore, these should be interpreted as optimal travel
-                        times. The journeys might not exist when taking into
-                        account real interchange times.
-                      </p>
+                      <p>{t("helper")}</p>
+                      <p>{t("assumptions")}</p>
                       <div>
-                        <span className="font-mono text-sm text-gray-900">
-                          Reachable in...
+                        <span>
+                          {t("reachable")}
                         </span>
                         <div className="grid grid-cols-5 gap-2">
                           {[
@@ -494,20 +488,20 @@ const InfoPanel = () => {
                                 className="w-full h-4"
                                 style={{ backgroundColor: color }}
                               />
-                              <span className="font-mono text-sm text-gray-900">
+                              <span className="text-sm">
                                 {i + 1} h
                               </span>
                             </div>
                           ))}
                         </div>
 
-                        <p className="my-12">
-                          Any questions? Reach out to me on Twitter:{" "}
+                        <div className="py-12">
+                          {t("questions")}
                           <a href="https://www.twitter.com/_benjamintd">
                             @_benjamintd
                             <Twitter className="inline ml-2 -mt-1" />
                           </a>
-                        </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -586,3 +580,11 @@ const Twitter = ({ className }: { className: string }) => (
 );
 
 export default Home;
+
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale!, ["common"])),
+    },
+  };
+};
