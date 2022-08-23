@@ -57,8 +57,10 @@ const computeIsochrones = async (
         Math.min(
           travelTimes.get(t.toStationId) || Infinity,
           travelTimes.get(t.fromStationId)! +
-            (interchanges === 0 || t.source === DirectTimeSource.computed // source "computed" is reserved for local transit (9kph), for which we only want to add one interchange time, not 2.
+            (interchanges === 0
               ? 0
+              : t.source === DirectTimeSource.computed // source "computed" is reserved for local transit (9kph), for which we only want to add one interchange time, not 2.
+              ? INTERCHANGE_TIME / 2
               : INTERCHANGE_TIME) +
             t.duration
         )
@@ -143,8 +145,6 @@ const computeIsochrones = async (
     isochrones.push(clone(isoGeometry));
   }
 
-  const startInsert = performance.now();
-
   await Promise.all(
     isochrones.map(
       async (iso) =>
@@ -168,9 +168,6 @@ const computeIsochrones = async (
         })
     )
   );
-
-  const endInsert = performance.now();
-  console.log(endInsert - startInsert, "ms to insert");
 };
 
 const fetchStationsWithNoIsochrones = async () => {
@@ -183,9 +180,8 @@ const fetchStationsWithNoIsochrones = async () => {
     ORDER BY max_speed desc
   )
   SELECT id from s
-  LIMIT 10
-  -- LEFT JOIN isochrones on s.id = isochrones.station_id
-  -- WHERE isochrones.station_id is null
+  LEFT JOIN isochrones on s.id = isochrones.station_id
+  WHERE isochrones.station_id is null
     `;
 
   return stations.map((s) => s.id);
@@ -207,9 +203,9 @@ const main = async () => {
 
   while (keepGoing) {
     const stations = await fetchStationsWithNoIsochrones();
-    // if (stations.length === 0) {
-    keepGoing = false;
-    // }
+    if (stations.length === 0) {
+      keepGoing = false;
+    }
     for (let stationId of stations) {
       try {
         await computeIsochrones(stationId, directTimes, stationsMap).then(() =>
