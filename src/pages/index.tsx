@@ -386,7 +386,7 @@ const Home: NextPage = () => {
     <div className="relative w-screen h-screen">
       {!stationsFC && (
         <div className="absolute top-0 left-0 z-50 rounded-full animate-spin">
-          <Spinner className='w-8 h-8' />
+          <Spinner className='w-8 h-8 p-2' />
         </div>
       )}
       <div className="w-full h-full" ref={mapContainer} />
