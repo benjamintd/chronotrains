@@ -31,7 +31,7 @@ const Home: NextPage = () => {
     let mapboxMap = new mapboxgl.Map({
       container: mapContainer.current!,
       style: "mapbox://styles/mapbox/light-v9",
-      center: [2, 45],
+      center: [8, 45],
       zoom: 4,
     });
 
@@ -385,8 +385,8 @@ const Home: NextPage = () => {
   return (
     <div className="relative w-screen h-screen">
       {!stationsFC && (
-        <div className="absolute top-0 left-0 rounded-full animate-spin">
-          <Spinner />
+        <div className="absolute top-0 left-0 z-50 rounded-full animate-spin">
+          <Spinner className='w-8 h-8' />
         </div>
       )}
       <div className="w-full h-full" ref={mapContainer} />
@@ -515,11 +515,10 @@ const InfoPanel = () => {
   );
 };
 
-const Spinner = () => (
+const Spinner = ({ className }: { className: string }) => (
   <svg
+    className={className}
     xmlns="http://www.w3.org/2000/svg"
-    width="1em"
-    height="1em"
     viewBox="0 0 24 24"
   >
     <g fill="currentColor">
