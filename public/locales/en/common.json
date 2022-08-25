@@ -1,0 +1,12 @@
+{
+    "chronotrains": "Chronotrains",
+    "tagline": "See how far you can travel by train in 5h from any station in Europe on this interactive map.",
+    "title": "How far can you go by train in 5h?",
+    "close": "Close panel",
+    "intro": "This map shows you how far you can travel from each station in Europe in less than 5 hours.",
+    "credits": "It is inspired by the great <1>Direkt Bahn Guru</1>. The data is based off of this site, which sources it from the Deutsche Bahn.",
+    "helper": "Hover your mouse over a station to see the isochrones from that city.",
+    "assumptions": "This assumes interchanges are 20 minutes, and transit between stations is a little over walking speed. Therefore, these should be interpreted as optimal travel times. The journeys might not exist when taking into account real interchange times.",
+    "reachable": "Reachable in...",
+    "questions": "Any questions? Reach out to me on Twitter: "
+}

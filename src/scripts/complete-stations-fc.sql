@@ -1,4 +1,3 @@
--- insert computed durations for walkable station-station paths
 with t as (
 select id, name, st_setsrid(st_makepoint(longitude_e7 / 10000000., latitude_e7 / 10000000.), 4326) as geometry, max(1. * direct_times.distance_km *  direct_times.distance_km / direct_times.duration) as max_speed
 from stations

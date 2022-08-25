@@ -1,23 +1,32 @@
-# Next.js + Tailwind CSS Example
+# Chronotrains
 
-This example shows how to use [Tailwind CSS](https://tailwindcss.com/) [(v3.0)](https://tailwindcss.com/blog/tailwindcss-v3) with Next.js. It follows the steps outlined in the official [Tailwind docs](https://tailwindcss.com/docs/guides/nextjs).
+Chronotrains is an interactive map that allows seeing how far you can travel by train in 5h.
 
-## Deploy your own
+## How does it work?
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example) or preview live with [StackBlitz](https://stackblitz.com/github/vercel/next.js/tree/canary/examples/with-tailwindcss)
+This map displays isochrones: the area that is reacheable from a starting point in a given amount of time.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-tailwindcss&project-name=with-tailwindcss&repository-name=with-tailwindcss)
+This is made possible by building a graph of train stations with the journey durations, and exploring that graph for each station to see which destinations are reacheable in 1h, 2h, ... 5h.
 
-## How to use
+The source data is from the Deutsche Bahn, conveniently wrapped into an API by [Direkt Bahn Guru](https://github.com/juliuste/api.direkt.bahn.guru).
 
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init), [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/), or [pnpm](https://pnpm.io) to bootstrap the example:
+Because local transit is not included for most cities, there are no journeys available between different stations that can actually connected by bus, bike, or on foot.
 
-```bash
-npx create-next-app --example with-tailwindcss with-tailwindcss-app
-# or
-yarn create next-app --example with-tailwindcss with-tailwindcss-app
-# or
-pnpm create next-app --example with-tailwindcss with-tailwindcss-app
-```
+We add edges between those closeby stations (when the distance in less than 10 km), assuming the distance can be traveled at 9 km/h (faster than walking, slower than biking).
 
-Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
+After scraping this data, we pre-compute the isochrones. We assume interchanges last 20 minutes.
+The isochrones are stored as GeoJSON and served on hover.
+
+## Technology
+
+This is a Next.js application deployed on Vercel. This allows using the Vercel Edge cache to serve the isochrones fast enough to have a smooth experience.
+
+The mapping library is mapbox-gl.
+
+The data is stored on a Postgres database hosted at Supabase.
+
+The pre-processing is a mix between Node.js scripts and SQL queries. It is currenly triggered by hand and processed locally.
+
+## Internationalization
+
+We use `next-i18next` to translate the app into various languages. If you'd like to contribute a language, you can do so by submitting a Pull Request with a new file in `public/locales/[your language]/common.json`, and editing `next-i18next.config.js` to add your locale name.

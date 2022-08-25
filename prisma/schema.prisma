@@ -9,17 +9,15 @@ datasource db {
 }
 
 model Station {
-  id                     Int                      @id
-  name                   String
-  latitudeE7             Int                      @map("latitude_e7")
-  longitudeE7            Int                      @map("longitude_e7")
-  directTimesFetched     Boolean                  @map("direct_times_fetched")
-  geom                   Unsupported("geometry")?
-  timesDeparting         DirectTime[]             @relation("from_station")
-  timesArriving          DirectTime[]             @relation("to_station")
-  isochrones             Isochrone[]
-  shortestTimesDeparting ShortestTime[]           @relation("from_station")
-  shortestTimesArriving  ShortestTime[]           @relation("to_station")
+  id                 Int                      @id
+  name               String
+  latitudeE7         Int                      @map("latitude_e7")
+  longitudeE7        Int                      @map("longitude_e7")
+  directTimesFetched Boolean                  @map("direct_times_fetched")
+  geom               Unsupported("geometry")?
+  timesDeparting     DirectTime[]             @relation("from_station")
+  timesArriving      DirectTime[]             @relation("to_station")
+  isochrones         Isochrone[]
 
   @@index([geom], map: "geom_idx", type: Gist)
   @@map("stations")
@@ -36,18 +34,6 @@ model DirectTime {
 
   @@id([toStationId, fromStationId])
   @@map("direct_times")
-}
-
-model ShortestTime {
-  toStationId   Int     @map("to_station_id")
-  fromStationId Int     @map("from_station_id")
-  duration      Int
-  fromStation   Station @relation("from_station", fields: [fromStationId], references: [id])
-  toStation     Station @relation("to_station", fields: [toStationId], references: [id])
-
-  @@id([toStationId, fromStationId])
-  @@index([fromStationId])
-  @@map("shortest_times")
 }
 
 model Isochrone {
