@@ -6,10 +6,18 @@ import Meta from '~/components/meta';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return <SWRConfig value={{
-    fetcher: (resource: RequestInfo, init: RequestInit) => fetch(resource, init).then(res => res.json()),
+    fetcher: (resource: RequestInfo) => fetch(resource, {
+      cache: 'force-cache',
+      headers: {
+        'Cache-Control': 'max-age=60'
+      }
+    }).then(res => res.json()),
     revalidateIfStale: false,
     revalidateOnFocus: false,
-    revalidateOnReconnect: false
+    revalidateOnReconnect: false,
+    compare: (a, b) => { // if we got a response once, it's a valid one.
+      return a !== undefined && b !== undefined;
+    }
   }}>
     <Meta />
     <Component {...pageProps} />

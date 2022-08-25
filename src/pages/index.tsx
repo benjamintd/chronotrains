@@ -23,7 +23,7 @@ const Home: NextPage = () => {
   const [displayedIsochrones, setDisplayedIsochrones] = useState<number | null>(
     null
   );
-  const isochronesData = useIsochronesData(hoveredStation);
+  const isochronesData = useIsochronesData(selectedStation || hoveredStation);
   const stationsFC = useStationsFC();
 
   useEffect(() => {
@@ -360,7 +360,7 @@ const Home: NextPage = () => {
   );
 
   useEffect(() => {
-    if (displayedIsochrones === hoveredStation) {
+    if (!selectedStation && displayedIsochrones === hoveredStation) {
       return;
     }
     if (map) {
