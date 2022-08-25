@@ -267,6 +267,9 @@ const Home: NextPage = () => {
   useEffect(() => {
     if (map) {
       const onMouseMove = (e: MapMouseEvent) => {
+        if (selectedStation) {
+          return;
+        }
         const features = map.queryRenderedFeatures(
           [
             [e.point.x - 10, e.point.y - 10],

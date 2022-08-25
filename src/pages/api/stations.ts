@@ -43,6 +43,9 @@ export default async function handler(
       })
     );
 
-  res.setHeader("Cache-Control", "max-age=0, s-maxage=86400");
+  res.setHeader(
+    "Cache-Control",
+    "max-age=60, s-maxage=86400, stale-while-revalidate=86400"
+  );
   return res.json({ type: "FeatureCollection", features });
 }
