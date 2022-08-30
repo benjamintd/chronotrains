@@ -389,7 +389,7 @@ const Home: NextPage = () => {
     <div className="relative w-screen h-screen">
       {!stationsFC && (
         <div className="absolute top-0 left-0 z-50 rounded-full animate-spin">
-          <Spinner className='w-8 h-8 p-2' />
+          <Spinner className="w-8 h-8 p-2" />
         </div>
       )}
       <div className="w-full h-full" ref={mapContainer} />
@@ -459,7 +459,7 @@ const InfoPanel = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="relative flex-1 px-4 mt-6 sm:px-6">
+                  <div className="relative flex-1 px-4 pb-12 mt-6 sm:px-6">
                     <div className="absolute inset-0 px-4 sm:px-6">
                       <p>{t("intro")}</p>
                       <p>
@@ -475,9 +475,7 @@ const InfoPanel = () => {
                       <p>{t("helper")}</p>
                       <p>{t("assumptions")}</p>
                       <div>
-                        <span>
-                          {t("reachable")}
-                        </span>
+                        <span>{t("reachable")}</span>
                         <div className="grid grid-cols-5 gap-2">
                           {[
                             "rgba(240,59,32,0.9)",
@@ -491,19 +489,32 @@ const InfoPanel = () => {
                                 className="w-full h-4"
                                 style={{ backgroundColor: color }}
                               />
-                              <span className="text-sm">
-                                {i + 1} h
-                              </span>
+                              <span className="text-sm">{i + 1} h</span>
                             </div>
                           ))}
                         </div>
 
-                        <div className="py-12">
+                        <div className='py-12'>
                           {t("questions")}
                           <a href="https://www.twitter.com/_benjamintd">
                             @_benjamintd
                             <Twitter className="inline ml-2 -mt-1" />
                           </a>
+                          <p>
+                            <Trans i18nKey="open-source">
+                              It&apos;s
+                              <a href="https://github.com/benjamintd/chronotrains">
+                                open-source
+                              </a>
+                              .
+                            </Trans>
+                          </p>
+                          <p>
+                            <Trans i18nKey="support">
+                              Keep the project running by supporting it on
+                              <a href="https://ko-fi.com/benjamintd">ko-fi</a>.
+                            </Trans>
+                          </p>
                         </div>
                       </div>
                     </div>

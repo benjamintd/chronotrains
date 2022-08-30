@@ -32,3 +32,7 @@ The pre-processing is a mix between Node.js scripts and SQL queries. It is curre
 ## Internationalization
 
 We use `next-i18next` to translate the app into various languages. If you'd like to contribute a language, you can do so by submitting a Pull Request with a new file in `public/locales/[your language]/common.json`, and editing `next-i18next.config.js` to add your locale name.
+
+## Cloning the repo
+
+Previous versions of the git history contained all the data committed as static files. For faster cloning, use `git clone --depth 1 https://github.com/benjamintd/chronotrains.git`.

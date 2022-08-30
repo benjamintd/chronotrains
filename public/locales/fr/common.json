@@ -1,12 +1,14 @@
 {
-    "chronotrains": "Chronotrains",
-    "tagline": "Visualisez jusqu'où vous pouvez aller en 5h de train sur cette carte interactive de l'Europe",
-    "title": "Jusqu'où peut-on aller en 5h de train ?",
-    "close": "Fermer",
-    "intro": "Visualisez où vous pouvez aller depuis chaque gare européenne en moins de 5h.",
-    "credits": "Cette carte est inspirée de <1>Direkt Bahn Guru</1>. Les données proviennent de la Deutsche Bahn.",
-    "helper": "Passez votre souris sur une gare pour observer les isochrones.",
-    "assumptions": "On suppose ici que les changements sont de 20 minutes et qu'on peut se déplacer entre deux gares d'une même ville à une vitesse de 9 km/h. Cette carte représente donc une version optimale de ces trajets. Les vrais horaires des trains peuvent faire varier ces estimations.",
-    "reachable": "Atteignable en...",
-    "questions": "Des questions ? Contactez-moi sur Twitter : "
+  "chronotrains": "Chronotrains",
+  "tagline": "Visualisez jusqu'où vous pouvez aller en 5h de train sur cette carte interactive de l'Europe",
+  "title": "Jusqu'où peut-on aller en 5h de train ?",
+  "close": "Fermer",
+  "intro": "Visualisez où vous pouvez aller depuis chaque gare européenne en moins de 5h.",
+  "credits": "Cette carte est inspirée de <1>Direkt Bahn Guru</1>. Les données proviennent de la Deutsche Bahn.",
+  "helper": "Passez votre souris sur une gare pour observer les isochrones.",
+  "assumptions": "On suppose ici que les changements sont de 20 minutes et qu'on peut se déplacer entre deux gares d'une même ville à une vitesse de 9 km/h. Cette carte représente donc une version optimale de ces trajets. Les vrais horaires des trains peuvent faire varier ces estimations.",
+  "reachable": "Atteignable en...",
+  "questions": "Des questions ? Contactez-moi sur Twitter : ",
+  "open-source": "Le projet est open-source et disponible sur <1>Github</1>.",
+  "support": "Vous pouvez participer à la maintenance et à l'hébergement du site sur <1>ko-fi</1>."
 }
