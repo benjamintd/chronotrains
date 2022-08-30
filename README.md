@@ -2,6 +2,8 @@
 
 Chronotrains is an interactive map that allows seeing how far you can travel by train in 5h.
 
+![Screen Shot 2022-08-30 at 3 39 18 PM](https://user-images.githubusercontent.com/11202803/187453751-816f9f2b-8cb5-4586-ae40-4bc3b5da2087.png)
+
 ## How does it work?
 
 This map displays isochrones: the area that is reacheable from a starting point in a given amount of time.
