@@ -18,10 +18,11 @@ import useStationsFC from "~/lib/useStationsFC";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { Trans, useTranslation } from "next-i18next";
 import useRouteParams from "~/lib/useRouteParams";
+import { useRouter } from "next/router";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
-const Home: NextPage = () => {
+const Home: NextPage = (props) => {
   const [routeParams, setRouteParams] = useRouteParams();
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
@@ -459,8 +460,9 @@ const Home: NextPage = () => {
 
 /* This example requires Tailwind CSS v2.0+ */
 
-const InfoPanel = memo(() => {
-  const [open, setOpen] = useState(true);
+const InfoPanel = () => {
+  const router = useRouter();
+  const [open, setOpen] = useState(router.isFallback ? false : true);
   const { t } = useTranslation();
 
   return (
@@ -576,8 +578,7 @@ const InfoPanel = memo(() => {
       </div>
     </Transition.Root>
   );
-});
-InfoPanel.displayName = "InfoPanel";
+};
 
 const Spinner = ({ className }: { className: string }) => (
   <svg
