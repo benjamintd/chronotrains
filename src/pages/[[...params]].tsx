@@ -1,6 +1,14 @@
-import type { GetStaticProps, NextPage } from "next";
+import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import mapboxgl, { GeoJSONSource, MapMouseEvent } from "mapbox-gl";
-import { useEffect, useRef, useState, Fragment, useCallback } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  Fragment,
+  useCallback,
+  memo,
+  useMemo,
+} from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { IsochronesRes } from "./isochrones/[stationId]";
 import { FeatureCollection, MultiPolygon, Polygon } from "@turf/turf";
@@ -9,30 +17,38 @@ import useIsochronesData from "~/lib/useIsochronesData";
 import useStationsFC from "~/lib/useStationsFC";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { Trans, useTranslation } from "next-i18next";
+import useRouteParams from "~/lib/useRouteParams";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
 const Home: NextPage = () => {
+  const [routeParams, setRouteParams] = useRouteParams();
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const [hoveredStation, setHoveredStation] = useState<number | null>(null);
-  const [selectedStation, setSelectedStation] = useState<number | null>(null);
-  const [selectedStationName, setSelectedStationName] = useState<string | null>(
-    null
+  const [selectedStation, setSelectedStation] = useState<number | null>(
+    routeParams.stationId
   );
+
   const [displayedIsochrones, setDisplayedIsochrones] = useState<number | null>(
     null
   );
   const isochronesData = useIsochronesData(selectedStation || hoveredStation);
   const stationsFC = useStationsFC();
 
+  const selectedStationName = useMemo(() => {
+    return stationsFC?.features.find(
+      (f) => f.properties?.id === selectedStation
+    )?.properties?.name;
+  }, [selectedStation, stationsFC]);
+
   useEffect(() => {
     if (map) return; // initialize map only once
     let mapboxMap = new mapboxgl.Map({
       container: mapContainer.current!,
       style: "mapbox://styles/mapbox/light-v9",
-      center: [8, 45],
-      zoom: 4,
+      center: [routeParams.pos?.lng || 8, routeParams.pos?.lat || 45],
+      zoom: routeParams.pos?.zoom || 4,
     });
 
     mapboxMap.on("load", () => {
@@ -262,7 +278,15 @@ const Home: NextPage = () => {
         },
       });
     });
-  }, [map]);
+  }, [map, routeParams]);
+
+  useEffect(() => {
+    if (map && routeParams.stationId !== selectedStation) {
+      const { lng, lat } = map.getCenter();
+      const zoom = map.getZoom();
+      setRouteParams({ stationId: selectedStation, pos: { zoom, lng, lat } });
+    }
+  }, [routeParams.stationId, selectedStation, map, setRouteParams]);
 
   useEffect(() => {
     if (map) {
@@ -308,22 +332,37 @@ const Home: NextPage = () => {
           const station = features[features.length - 1]; // the largest according to the API scoring
           setSelectedStation(station.properties!.id as number);
           (map.getSource("selectedStation") as GeoJSONSource).setData(station);
-
-          setSelectedStationName(station.properties!.name as string);
-
+          (map.getSource("hoveredStation") as GeoJSONSource).setData({
+            type: "FeatureCollection",
+            features: [],
+          });
           map.getCanvas().style.cursor = "default";
         }
       };
 
+      const onMoveend = () => {
+        const { lng, lat } = map.getCenter();
+        const zoom = map.getZoom();
+        setRouteParams({ stationId: selectedStation, pos: { zoom, lng, lat } });
+      };
+
       map.on("mousemove", onMouseMove);
       map.on("click", onClick);
+      map.on("moveend", onMoveend);
 
       return () => {
         map.off("mousemove", onMouseMove);
         map.off("click", onClick);
+        map.off("moveend", onMoveend);
       };
     }
-  }, [map, setHoveredStation, setSelectedStation, selectedStation]);
+  }, [
+    map,
+    setHoveredStation,
+    setSelectedStation,
+    selectedStation,
+    setRouteParams,
+  ]);
 
   useEffect(() => {
     if (map && stationsFC) {
@@ -333,13 +372,23 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     if (map && !selectedStation) {
-      setSelectedStationName(null);
       (map.getSource("selectedStation") as GeoJSONSource).setData({
         type: "FeatureCollection",
         features: [],
       });
+    } else if (map && selectedStation && stationsFC) {
+      const station = stationsFC.features.find(
+        (f) => f.properties!.id === selectedStation
+      );
+      if (station) {
+        (map.getSource("selectedStation") as GeoJSONSource).setData(station);
+        (map.getSource("hoveredStation") as GeoJSONSource).setData({
+          type: "FeatureCollection",
+          features: [],
+        });
+      }
     }
-  }, [map, selectedStation, setSelectedStationName]);
+  }, [map, selectedStation, stationsFC]);
 
   const setMapIsochronesData = useCallback(
     (
@@ -410,7 +459,7 @@ const Home: NextPage = () => {
 
 /* This example requires Tailwind CSS v2.0+ */
 
-const InfoPanel = () => {
+const InfoPanel = memo(() => {
   const [open, setOpen] = useState(true);
   const { t } = useTranslation();
 
@@ -494,7 +543,7 @@ const InfoPanel = () => {
                           ))}
                         </div>
 
-                        <div className='py-12'>
+                        <div className="py-12">
                           {t("questions")}
                           <a href="https://www.twitter.com/_benjamintd">
                             @_benjamintd
@@ -527,7 +576,8 @@ const InfoPanel = () => {
       </div>
     </Transition.Root>
   );
-};
+});
+InfoPanel.displayName = "InfoPanel";
 
 const Spinner = ({ className }: { className: string }) => (
   <svg
@@ -594,10 +644,21 @@ const Twitter = ({ className }: { className: string }) => (
 
 export default Home;
 
+export const getStaticPaths: GetStaticPaths = async () => {
+  return {
+    paths: [
+      { params: { params: [] }, locale: "en" },
+      { params: { params: [] }, locale: "fr" },
+      { params: { params: [] }, locale: "de" },
+    ],
+    fallback: true,
+  };
+};
+
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   return {
     props: {
-      ...(await serverSideTranslations(locale!, ["common"])),
+      ...(await serverSideTranslations(locale || 'en', ["common"])),
     },
   };
 };

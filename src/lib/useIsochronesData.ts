@@ -5,7 +5,8 @@ import { IsochronesRes } from "~/pages/isochrones/[stationId]";
 // See /pages/isochrones/[stationId] for more information.
 const useIsochronesData = (stationId?: number | null) => {
   const { data: isochronesData } = useSWR<{ pageProps: IsochronesRes }>(
-    stationId
+    // client-side only fetching.
+    stationId && typeof window !== "undefined"
       ? `/_next/data/${window.__NEXT_DATA__.buildId}/en/isochrones/${stationId}.json`
       : null
   );
