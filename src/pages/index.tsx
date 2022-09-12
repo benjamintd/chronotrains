@@ -1,4 +1,4 @@
-import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
+import type { GetStaticProps, NextPage } from "next";
 import mapboxgl, { GeoJSONSource, MapMouseEvent } from "mapbox-gl";
 import {
   useEffect,
@@ -6,7 +6,6 @@ import {
   useState,
   Fragment,
   useCallback,
-  memo,
   useMemo,
 } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -17,13 +16,18 @@ import useIsochronesData from "~/lib/useIsochronesData";
 import useStationsFC from "~/lib/useStationsFC";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { Trans, useTranslation } from "next-i18next";
-import useRouteParams from "~/lib/useRouteParams";
-import { useRouter } from "next/router";
+import { queryTypes, useQueryStates } from "next-usequerystate";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
-const Home: NextPage = (props) => {
-  const [routeParams, setRouteParams] = useRouteParams();
+const Home: NextPage = () => {
+  const [routeParams, setRouteParams] = useQueryStates({
+    lat: queryTypes.float.withDefault(45),
+    lng: queryTypes.float.withDefault(8),
+    zoom: queryTypes.float.withDefault(4),
+    stationId: queryTypes.integer
+  });
+
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const [hoveredStation, setHoveredStation] = useState<number | null>(null);
@@ -48,8 +52,8 @@ const Home: NextPage = (props) => {
     let mapboxMap = new mapboxgl.Map({
       container: mapContainer.current!,
       style: "mapbox://styles/mapbox/light-v9",
-      center: [routeParams.pos?.lng || 8, routeParams.pos?.lat || 45],
-      zoom: routeParams.pos?.zoom || 4,
+      center: [routeParams.lng, routeParams.lat],
+      zoom: routeParams.zoom,
     });
 
     mapboxMap.on("load", () => {
@@ -285,7 +289,7 @@ const Home: NextPage = (props) => {
     if (map && routeParams.stationId !== selectedStation) {
       const { lng, lat } = map.getCenter();
       const zoom = map.getZoom();
-      setRouteParams({ stationId: selectedStation, pos: { zoom, lng, lat } });
+      setRouteParams({ stationId: selectedStation, zoom: +zoom.toFixed(1), lng: +lng.toFixed(2), lat: +lat.toFixed(2) });
     }
   }, [routeParams.stationId, selectedStation, map, setRouteParams]);
 
@@ -344,7 +348,7 @@ const Home: NextPage = (props) => {
       const onMoveend = () => {
         const { lng, lat } = map.getCenter();
         const zoom = map.getZoom();
-        setRouteParams({ stationId: selectedStation, pos: { zoom, lng, lat } });
+        setRouteParams({ stationId: selectedStation, zoom: +zoom.toFixed(1), lng: +lng.toFixed(2), lat: +lat.toFixed(2) });
       };
 
       map.on("mousemove", onMouseMove);
@@ -461,8 +465,7 @@ const Home: NextPage = (props) => {
 /* This example requires Tailwind CSS v2.0+ */
 
 const InfoPanel = () => {
-  const router = useRouter();
-  const [open, setOpen] = useState(router.isFallback ? false : true);
+  const [open, setOpen] = useState(true);
   const { t } = useTranslation();
 
   return (
@@ -645,21 +648,10 @@ const Twitter = ({ className }: { className: string }) => (
 
 export default Home;
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  return {
-    paths: [
-      { params: { params: [] }, locale: "en" },
-      { params: { params: [] }, locale: "fr" },
-      { params: { params: [] }, locale: "de" },
-    ],
-    fallback: true,
-  };
-};
-
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   return {
     props: {
-      ...(await serverSideTranslations(locale || 'en', ["common"])),
+      ...(await serverSideTranslations(locale || "en", ["common"])),
     },
   };
 };
