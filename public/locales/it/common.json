@@ -1,0 +1,14 @@
+{
+  "chronotrains": "Chronotrains",
+  "tagline": "Scopri dove puoi arrivare in treno in 5 ore da qualsiasi stazione in Europa, consultando questa mappa interattiva.",
+  "title": "Dove puoi arrivare in treno in 5 ore?",
+  "close": "Chiudi il riquadro",
+  "intro": "La mappa mostra dove puoi arrivare da ogni stazione europea in meno di 5 ore",
+  "credits": "I dati si basano sul fantastico sito <1>Direkt Bahn Guru</1>, che li ricava direttamente dalla Deutsche Bahn e che mi ha dato l'ispirazione.",
+  "helper": "Passa il cursore sopra una stazione per vedere le isocrone",
+  "assumptions": "Si presume che un cambio duri 20 minuti e si viaggi da una stazione a un'altra a passo sostenuto. La mappa riflette quindi i tempi di percorrenza ottimali. Gli orari effettivi dei treni possono influenzare queste stime.",
+  "reachable": "Raggiungibile in...",
+  "questions": "Domande? Contattami su Twitter: ",
+  "open-source": "Il progetto è open source e disponibile su <1>Github</1>",
+  "support": "Puoi dare il tuo contributo al mantenimento del progetto supportandomi su <1>ko-fi</1>."
+}
