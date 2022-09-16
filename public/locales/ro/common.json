@@ -1,0 +1,14 @@
+{
+  "chronotrains": "Chronotrains",
+  "tagline": "Află unde poți ajunge cu trenul în 5 ore din orice stație din Europa, consultând această hartă interactivă.",
+  "title": "Cât de departe poți ajunge cu trenul în 5 ore?",
+  "close": "Închideți panoul",
+  "intro": "Această hartă vă arată unde puteți ajunge de la fiecare stație europeană în mai puțin de 5 ore.",
+  "credits": "Datele se bazează pe fantasticul site, care mi-a dat inspiratie, <1>Direkt Bahn Guru</1>, care le ia direct de la Deutsche Bahn.",
+  "helper": "Treceți cursorul peste o stație pentru a vedea izocronele din acel oraș",
+  "assumptions": "Se presupune că o schimbare durează 20 de minute și se călătorește de la o stație la alta într-un ritm alert. Prin urmare, harta reflectă timpii optimi de călătorie. Călătoriile ar putea să nu existe, luând în considerare timpii reali de schimb.",
+  "reachable": "Accesibil în...",
+  "questions": "Întrebări? Contactați-mă pe Twitter: ",
+  "open-source": "Proiectul este open source și disponibil pe<1>Github</1>",
+  "support": "Păstrați proiectul în funcțiune, susținându-l <1>ko-fi</1>."
+}
