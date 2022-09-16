@@ -10,7 +10,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<StationRes>
 ) {
-  const { lat = 0, lng = 0 } = req.query;
+  const { lat = 0, lng = 0, duration } = req.query;
 
   const [{ id: closestStationId }]: any = await prisma.$queryRaw`
     SELECT id
@@ -25,7 +25,9 @@ export default async function handler(
     where: {
       id: +closestStationId,
     },
-    include: { isochrones: true },
+    include: {
+      isochrones: duration ? { where: { duration: +duration } } : true,
+    },
   });
 
   if (!station) {
