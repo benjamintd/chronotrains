@@ -12,12 +12,12 @@ export default async function handler(
 ) {
   const { lat = 0, lng = 0 } = req.query;
 
-  const closestStationId: number = await prisma.$queryRaw`
+  const [{ id: closestStationId }]: any = await prisma.$queryRaw`
     SELECT id
-    FROM station
+    FROM stations
     ORDER BY ST_Distance(
-      ST_transform(ST_GeomFromText('POINT(${lng} ${lat})', 4326), 3857),
-      geometry) ASC
+      ST_transform(ST_SetSRID(ST_Point(${lng}::float, ${lat}::float), 4326), 3857),
+      geom) ASC
     LIMIT 1
   `;
 
