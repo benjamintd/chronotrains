@@ -17,6 +17,7 @@ import useStationsFC from "~/lib/useStationsFC";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { Trans, useTranslation } from "next-i18next";
 import { queryTypes, useQueryStates } from "next-usequerystate";
+import { useRouter } from "next/router";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
@@ -467,6 +468,9 @@ const Home: NextPage = () => {
 const InfoPanel = () => {
   const [open, setOpen] = useState(true);
   const { t } = useTranslation();
+  const { locale } = useRouter();
+
+  const dir = locale ==='ar' ? 'rtl' : 'ltr';
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -482,7 +486,7 @@ const InfoPanel = () => {
               leaveFrom="translate-x-0"
               leaveTo="translate-x-full"
             >
-              <div className="w-screen max-w-md prose pointer-events-auto">
+              <div className="w-screen max-w-md prose pointer-events-auto" dir={dir}>
                 <div className="flex flex-col h-full py-6 overflow-y-scroll bg-white shadow-xl">
                   <div className="px-4 sm:px-6">
                     <div className="flex items-start justify-between">
