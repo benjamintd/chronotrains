@@ -1,0 +1,14 @@
+{
+  "chronotrains": "Chronotrains",
+  "tagline": "Bekijk op deze interactieve kaart hoe ver u met de trein kunt reizen in 5 uur vanaf elk station in Europa.",
+  "title": "Hoe ver kun je met de trein reizen in 5 uur?",
+  "close": "Paneel sluiten",
+  "intro": "Deze kaart toont u hoe ver u vanaf elk station in Europa kunt reizen in minder dan 5 uur.",
+  "credits": "Het is geïnspireerd door de grote <1>Direkt Bahn Guru</1>. De gegevens zijn gebaseerd op deze site, die ze haalt van de Deutsche Bahn.",
+  "helper": "Beweeg uw muis over een station om de isochronen van die stad te zien.",
+  "assumptions": "Hierbij wordt ervan uitgegaan dat overstappen 20 minuten duurt, en dat het vervoer tussen de stations iets sneller verloopt dan te voet. Daarom moeten deze worden geïnterpreteerd als optimale reistijden. De reizen bestaan misschien niet wanneer rekening wordt gehouden met echte overstaptijden.",
+  "reachable": "Bereikbaar in...",
+  "questions": "Nog vragen? Contacteer me op Twitter: ",
+  "open-source": "Dit is open source en beschikbaar op <1>Github</1>.",
+  "support": "Houd het project mee draaiende door het te steunen op <1>ko-fi</1>."
+}
