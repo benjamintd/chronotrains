@@ -1,11 +1,11 @@
 import prisma from "~/lib/prisma";
-import stations from "../../1911/1911.json";
 import path from "path";
 import fs from "fs";
 
 export const main = async () => {
+  const stations = require("../../1911/1911.json");
   await prisma.station.createMany({
-    data: stations.features.map((station) => ({
+    data: stations.features.map((station: any) => ({
       name: station.properties.V1.toString(), // @todo geocode city or station
       id: +station.properties.V1,
       latitudeE7: Math.round(+station.geometry.coordinates[1] * 1e7),
