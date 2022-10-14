@@ -26,7 +26,7 @@ const Home: NextPage = () => {
     lat: queryTypes.float.withDefault(45),
     lng: queryTypes.float.withDefault(8),
     zoom: queryTypes.float.withDefault(4),
-    stationId: queryTypes.integer
+    stationId: queryTypes.integer,
   });
 
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -290,7 +290,12 @@ const Home: NextPage = () => {
     if (map && routeParams.stationId !== selectedStation) {
       const { lng, lat } = map.getCenter();
       const zoom = map.getZoom();
-      setRouteParams({ stationId: selectedStation, zoom: +zoom.toFixed(1), lng: +lng.toFixed(2), lat: +lat.toFixed(2) });
+      setRouteParams({
+        stationId: selectedStation,
+        zoom: +zoom.toFixed(1),
+        lng: +lng.toFixed(2),
+        lat: +lat.toFixed(2),
+      });
     }
   }, [routeParams.stationId, selectedStation, map, setRouteParams]);
 
@@ -349,7 +354,12 @@ const Home: NextPage = () => {
       const onMoveend = () => {
         const { lng, lat } = map.getCenter();
         const zoom = map.getZoom();
-        setRouteParams({ stationId: selectedStation, zoom: +zoom.toFixed(1), lng: +lng.toFixed(2), lat: +lat.toFixed(2) });
+        setRouteParams({
+          stationId: selectedStation,
+          zoom: +zoom.toFixed(1),
+          lng: +lng.toFixed(2),
+          lat: +lat.toFixed(2),
+        });
       };
 
       map.on("mousemove", onMouseMove);
@@ -466,11 +476,11 @@ const Home: NextPage = () => {
 /* This example requires Tailwind CSS v2.0+ */
 
 const InfoPanel = () => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const { t } = useTranslation();
   const { locale } = useRouter();
 
-  const dir = locale ==='ar' ? 'rtl' : 'ltr';
+  const dir = locale === "ar" ? "rtl" : "ltr";
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -486,7 +496,10 @@ const InfoPanel = () => {
               leaveFrom="translate-x-0"
               leaveTo="translate-x-full"
             >
-              <div className="w-screen max-w-md prose pointer-events-auto" dir={dir}>
+              <div
+                className="w-screen max-w-md prose pointer-events-auto"
+                dir={dir}
+              >
                 <div className="flex flex-col h-full py-6 overflow-y-scroll bg-white shadow-xl">
                   <div className="px-4 sm:px-6">
                     <div className="flex items-start justify-between">
