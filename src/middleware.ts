@@ -12,7 +12,7 @@ export function middleware(req: NextRequest) {
     const authValue = basicAuth.split(" ")[1];
     const authString = atob(authValue).toString();
 
-    if (process.env.BASIC_AUTH && authString === process.env.BASIC_AUTH) {
+    if (!process.env.BASIC_AUTH || authString === process.env.BASIC_AUTH) {
       return NextResponse.next();
     }
   }
