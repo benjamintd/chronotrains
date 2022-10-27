@@ -253,8 +253,8 @@ const Home: NextPage = () => {
         }
         const features = map.queryRenderedFeatures(
           [
-            [e.point.x - 10, e.point.y - 10],
-            [e.point.x + 10, e.point.y + 10],
+            [e.point.x - 7, e.point.y - 7],
+            [e.point.x + 7, e.point.y + 7],
           ],
           {
             layers: ["stations"],
