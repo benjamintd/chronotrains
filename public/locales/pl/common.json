@@ -1,0 +1,14 @@
+{
+  "chronotrains": "Chronotrains",
+  "tagline": "Na tej interaktywnej mapie zobaczysz jak daleko możesz dojechać pociągiem w 5h z każdej stacji w Europie.",
+  "title": "Jak daleko można dojechać pociągiem w 5h?",
+  "close": "Zamknij panel",
+  "intro": "Ta mapa pokazuje jak daleko można dojechać z każdej stacji w Europie w mniej niż 5 godzin.",
+  "credits": "Mapa zainspirowana stroną <1>Direkt Bahn Guru</1>. Dane źródłowe pochodzą z Deutsche Bahn, udostępnione przez Direkt Bahn Guru.",
+  "helper": "Najedź myszką na stację, aby zobaczyć izochrony z tego miasta.",
+  "assumptions": "Zakładamy, że czas przesiadki wynosi 20 minut, a trasę pomiędzy pobliskimi stacjami (odległość poniżej 10 km) można pokonać z prędkością 9 km/h. Dlatego podane czasy podróży należy interpretować jako optymalne. Podróże mogą nie być możliwe po uwzględnieniu rzeczywistych rozkładów jazdy.",
+  "reachable": "Dostępne w...",
+  "questions": "Masz pytania? Napisz na Twitterze: ",
+  "open-source": "To jest projekt open source dostępny na <1>Githubie</1>.",
+  "support": "Wesprzyj projekt na <1>ko-fi</1>."
+}
