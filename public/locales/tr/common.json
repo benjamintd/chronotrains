@@ -1,0 +1,14 @@
+{
+  "chronotrains": "Chronotrains",
+  "tagline": "Bu interaktif haritada, Avrupa'daki herhangi bir istasyondan trenle 5 saatte ne kadar uzağa seyahat edebileceğinizi görün.",
+  "title": "5 saatte trenle ne kadar uzağa gidebilirsiniz?",
+  "close": "Paneli kapat",
+  "intro": "Bu harita size Avrupa'daki her istasyondan 5 saatten daha kısa sürede ne kadar uzağa seyahat edebileceğinizi gösterir.",
+  "credits": "Bu harita <1>Direkt Bahn Guru</1>'dan ilham almıştır. Bu sitede yer alan veriler Deutsche Bahn'a dayanmaktadır.",
+  "helper": "O şehirden gelen izokronları görmek için farenizi bir istasyonun üzerine getirin.",
+  "assumptions": "Bu, kavşakların 20 dakika olduğunu ve istasyonlar arasındaki geçişin yürüme hızının biraz üzerinde olduğunu varsayar. Bu nedenle, bunlar optimal seyahat süreleri olarak yorumlanmalıdır. Gerçek değişim süreleri dikkate alındığında yolculuklar mevcut olmayabilir.",
+  "reachable": "Ulaşılabilir ...",
+  "questions": "Herhangi bir sorunuz varsa? Benimle Twitter'da iletişime geçin: ",
+  "open-source": "Bu açık kaynaktır ve <1>Github</1>'da mevcuttur.",
+  "support": "Bu projeyi <1>ko-fi</1>'da destekleyerek çalışmasını sağlayın."
+}
