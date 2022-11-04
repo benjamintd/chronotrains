@@ -6,7 +6,7 @@
   "intro": "Diese Karte zeigt, wie weit man in fünf Stunden von jedem Bahnhof in Europa reisen kann.",
   "credits": "Inspiriert vom großartigen <1>Direkt Bahn Guru</1>. Die Daten stammen von der Deutschen Bahn",
   "helper": "Bewegen Sie die Maus über einen Bahnhof, um die Isochrone dieses Ortes anzuzeigen",
-  "assumptions": "Es wird von einer Umsteigezeit von 20 Minuten ausgegangen. Für den Übergang zwischen Bahnhöfen derselben Stadt wird angenommen, dass er mit einer zügigen Schrittgeschwindigkeit bewältigt werden kann. Diese Karte widerspiegelt also eine optimale Reisezeit. Die angezeigten Verbindungen könnten mit realen Umstiegszeiten eventuell nicht existieren.",
+  "assumptions": "Es wird von einer Umsteigezeit von 20 Minuten ausgegangen. Für den Übergang zwischen Bahnhöfen derselben Stadt wird angenommen, dass er mit einer zügigen Schrittgeschwindigkeit bewältigt werden kann. Diese Karte spiegelt also eine optimale Reisezeit wieder. Die angezeigten Verbindungen könnten mit realen Umstiegszeiten eventuell nicht existieren.",
   "reachable": "Erreichbar in...",
   "questions": "Fragen? Schreiben Sie mir auf Twitter: ",
   "open-source": "Dieses Projekt ist quelloffen und auf <1>Github</1> erhältlich.",
