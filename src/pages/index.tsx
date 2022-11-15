@@ -18,6 +18,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { Trans, useTranslation } from "next-i18next";
 import { queryTypes, useQueryStates } from "next-usequerystate";
 import { useRouter } from "next/router";
+import AdBlock from "~/components/adBlock";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
@@ -26,7 +27,7 @@ const Home: NextPage = () => {
     lat: queryTypes.float.withDefault(45),
     lng: queryTypes.float.withDefault(8),
     zoom: queryTypes.float.withDefault(4),
-    stationId: queryTypes.integer
+    stationId: queryTypes.integer,
   });
 
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -290,7 +291,12 @@ const Home: NextPage = () => {
     if (map && routeParams.stationId !== selectedStation) {
       const { lng, lat } = map.getCenter();
       const zoom = map.getZoom();
-      setRouteParams({ stationId: selectedStation, zoom: +zoom.toFixed(1), lng: +lng.toFixed(2), lat: +lat.toFixed(2) });
+      setRouteParams({
+        stationId: selectedStation,
+        zoom: +zoom.toFixed(1),
+        lng: +lng.toFixed(2),
+        lat: +lat.toFixed(2),
+      });
     }
   }, [routeParams.stationId, selectedStation, map, setRouteParams]);
 
@@ -349,7 +355,12 @@ const Home: NextPage = () => {
       const onMoveend = () => {
         const { lng, lat } = map.getCenter();
         const zoom = map.getZoom();
-        setRouteParams({ stationId: selectedStation, zoom: +zoom.toFixed(1), lng: +lng.toFixed(2), lat: +lat.toFixed(2) });
+        setRouteParams({
+          stationId: selectedStation,
+          zoom: +zoom.toFixed(1),
+          lng: +lng.toFixed(2),
+          lat: +lat.toFixed(2),
+        });
       };
 
       map.on("mousemove", onMouseMove);
@@ -470,7 +481,7 @@ const InfoPanel = () => {
   const { t } = useTranslation();
   const { locale } = useRouter();
 
-  const dir = locale ==='ar' ? 'rtl' : 'ltr';
+  const dir = locale === "ar" ? "rtl" : "ltr";
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -486,7 +497,10 @@ const InfoPanel = () => {
               leaveFrom="translate-x-0"
               leaveTo="translate-x-full"
             >
-              <div className="w-screen max-w-md prose pointer-events-auto" dir={dir}>
+              <div
+                className="w-screen max-w-md prose pointer-events-auto"
+                dir={dir}
+              >
                 <div className="flex flex-col h-full py-6 overflow-y-scroll bg-white shadow-xl">
                   <div className="px-4 sm:px-6">
                     <div className="flex items-start justify-between">
@@ -567,6 +581,7 @@ const InfoPanel = () => {
                               .
                             </Trans>
                           </p>
+                          <AdBlock />
                           <p>
                             <Trans i18nKey="support">
                               Keep the project running by supporting it on
