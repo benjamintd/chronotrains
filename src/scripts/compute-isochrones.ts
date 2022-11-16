@@ -206,7 +206,9 @@ const main = async () => {
     if (stations.length === 0) {
       keepGoing = false;
     }
+    let i = 0;
     for (let stationId of stations) {
+      console.log(((100 * i++) / stations.length).toFixed(2));
       try {
         await computeIsochrones(stationId, directTimes, stationsMap).then(() =>
           console.log(stationId)
