@@ -581,13 +581,13 @@ const InfoPanel = () => {
                               .
                             </Trans>
                           </p>
-                          <AdBlock />
                           <p>
                             <Trans i18nKey="support">
                               Keep the project running by supporting it on
                               <a href="https://ko-fi.com/benjamintd">ko-fi</a>.
                             </Trans>
                           </p>
+                          <AdBlock />
                         </div>
                       </div>
                     </div>
