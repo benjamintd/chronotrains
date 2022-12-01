@@ -6,15 +6,15 @@ Chronotrains is an interactive map that allows seeing how far you can travel by 
 
 ## How does it work?
 
-This map displays isochrones: the area that is reacheable from a starting point in a given amount of time.
+This map displays isochrones: the area that is reachable from a starting point in a given amount of time.
 
-This is made possible by building a graph of train stations with the journey durations, and exploring that graph for each station to see which destinations are reacheable in 1h, 2h, ... 5h.
+This is made possible by building a graph of train stations with the journey durations, and exploring that graph for each station to see which destinations are reachable in 1h, 2h, ... 5h.
 
 The source data is from the Deutsche Bahn, conveniently wrapped into an API by [Direkt Bahn Guru](https://github.com/juliuste/api.direkt.bahn.guru).
 
-Because local transit is not included for most cities, there are no journeys available between different stations that can actually connected by bus, bike, or on foot.
+Because local transit is not included for most cities, there are no journeys available between different stations that can actually be connected by bus, bike, or on foot.
 
-We add edges between those closeby stations (when the distance in less than 10 km), assuming the distance can be traveled at 9 km/h (faster than walking, slower than biking).
+We add edges between those closeby stations (when the distance is less than 10 km), assuming the distance can be traveled at 9 km/h (faster than walking, slower than biking).
 
 After scraping this data, we pre-compute the isochrones. We assume interchanges last 20 minutes.
 The isochrones are stored as GeoJSON and served on hover.
@@ -27,7 +27,7 @@ The mapping library is mapbox-gl.
 
 The data is stored on a Postgres database hosted at Supabase.
 
-The pre-processing is a mix between Node.js scripts and SQL queries. It is currenly triggered by hand and processed locally.
+The pre-processing is a mix between Node.js scripts and SQL queries. It is currently triggered by hand and processed locally.
 
 ## Internationalization
 
