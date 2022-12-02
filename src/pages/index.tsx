@@ -566,7 +566,7 @@ const InfoPanel = () => {
                           ))}
                         </div>
 
-                        <div className="py-12">
+                        <div className="w-full py-12">
                           {t("questions")}
                           <a href="https://www.twitter.com/_benjamintd">
                             @_benjamintd
