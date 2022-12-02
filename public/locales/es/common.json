@@ -1,0 +1,14 @@
+{
+  "chronotrains": "Chronotrains",
+  "tagline": "Ve hasta dónde puedes viajar en tren en 5h desde cualquier estación de Europa en este mapa interactivo.",
+  "title": "¿Hasta dónde puedes viajar en tren en 5h?",
+  "close": "Cerrar el panel",
+  "intro": "Este mapa te muestra hasta dónde puedes viajar desde cada estación de Europa en menos de 5 horas.",
+  "credits": "Está inspirado por el gran <1>Direkt Bahn Guru</1>. Los datos provienen de este sitio, el cual lo obtiene de Deutsche Bahn.",
+  "helper": "Ponte sobre una estación para ver las isócronas desde esa ciudad.",
+  "assumptions": "Esto asume que los transbordos son de 20 minutos y el tránsito entre estaciones se hace un poco más rápido que caminando. Por lo tanto, estos deben ser interpretados como tiempos de viaje óptimos. Los viajes pueden no existir tomando en cuenta los tiempos de transbordo reales.",
+  "reachable": "Alcanzable en...",
+  "questions": "¿Alguna pregunta? Contáctame en Twitter: ",
+  "open-source": "Esto es código abierto y disponible en <1>Github</1>.",
+  "support": "Mantén el proyecto vivo apoyándolo en <1>ko-fi</1>."
+}
