@@ -6,10 +6,11 @@ const AdBlock = () => {
     <ErrorBoundary>
       <Adsense
         client="ca-pub-7420123397062174"
-        slot="6989466712"
+        slot="7594091045"
         format="display"
         responsive="true"
-        style={{ display: "block" }}
+        layout="in-article"
+        style={{ display: "block", minHeight: 300 }}
       ></Adsense>
     </ErrorBoundary>
   );
@@ -29,7 +30,9 @@ class ErrorBoundary extends React.Component<
     return { hasError: true };
   }
 
-  componentDidCatch() {}
+  componentDidCatch(error: Error) {
+    console.error(error);
+  }
 
   render() {
     if (this.state.hasError) {
