@@ -1,0 +1,14 @@
+ {
+  "chronotrains": "Chronotrains",
+  "tagline": "Se hvor langt du kan reise med tog innenfor 5 timer fra hvilken som helst stasjon i Europa på dette interaktive kartet.",
+  "title": "Hvor langt kan du komme med tog på 5 timer?",
+  "close": "Lukk panelet",
+  "intro": "Dette kartet viser hvor langt du kan reise fra hver stasjon i Europa innen mindre enn 5 timer",
+  "credits": "Inspirasjon er hentet fra <1>Direkt Bahn Guru</1>. Datene kommer fra denne siden, som henter dem fra Deutsche Bahn.",
+  "helper": "Hold musen din over en stasjon for å se isokronene fra den byen.",
+  "assumptions": "Det antas at togbytter er 20 minutter, og at forflytning mellom stasjoner foregår med rask gange. Det innebærer at denne tjenesten må sies å beregne optimale reisetider. Det er ikke sikkert at det faktisk er mulig å gjennomføre reisen med faktiske byttetider.",
+  "reachable": "Kan nås innen…",
+  "questions": "Har du spørsmål? Ta kontakt på Twitter: ",
+  "open-source": "Dette er åpen kildekode og tilgjengelig på <1>Github</1>.",
+  "support": "Hjelp oss holde dette prosjektet kjørende ved å støtte oss på <1>ko-fi</1>."
+}
