@@ -23,7 +23,7 @@ The isochrones are stored as GeoJSON and served on hover.
 
 This is a Next.js application deployed on Vercel. This allows using the Vercel Edge cache to serve the isochrones fast enough to have a smooth experience.
 
-The mapping library is mapbox-gl.
+The mapping library is maplibre-gl.
 
 The data is stored on a Postgres database hosted at Supabase.
 
