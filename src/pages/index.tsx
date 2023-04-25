@@ -1,5 +1,5 @@
 import type { GetStaticProps, NextPage } from "next";
-import mapboxgl, { GeoJSONSource, MapMouseEvent } from "mapbox-gl";
+import maplibregl, { GeoJSONSource, MapMouseEvent } from "maplibre-gl";
 import {
   useEffect,
   useRef,
@@ -8,7 +8,7 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import "mapbox-gl/dist/mapbox-gl.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { IsochronesRes } from "./isochrones/[stationId]";
 import { FeatureCollection, MultiPolygon, Polygon } from "@turf/turf";
 import { Transition } from "@headlessui/react";
@@ -20,8 +20,6 @@ import { queryTypes, useQueryStates } from "next-usequerystate";
 import { useRouter } from "next/router";
 import AdBlock from "~/components/adBlock";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
-
 const Home: NextPage = () => {
   const [routeParams, setRouteParams] = useQueryStates({
     lat: queryTypes.float.withDefault(45),
@@ -31,7 +29,7 @@ const Home: NextPage = () => {
   });
 
   const mapContainer = useRef<HTMLDivElement | null>(null);
-  const [map, setMap] = useState<mapboxgl.Map | null>(null);
+  const [map, setMap] = useState<maplibregl.Map | null>(null);
   const [hoveredStation, setHoveredStation] = useState<number | null>(null);
   const [selectedStation, setSelectedStation] = useState<number | null>(
     routeParams.stationId
@@ -51,126 +49,265 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     if (map) return; // initialize map only once
-    let mapboxMap = new mapboxgl.Map({
+    let maplibreMap = new maplibregl.Map({
       container: mapContainer.current!,
-      style: "mapbox://styles/mapbox/light-v9",
+      style: {
+        name: "MapLibre",
+        glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+        layers: [
+          {
+            id: "background",
+            type: "background",
+            paint: {
+              "background-color": "#dddddd",
+            },
+            layout: {
+              visibility: "visible",
+            },
+            maxzoom: 24,
+          },
+          {
+            id: "coastline",
+            type: "line",
+            paint: {
+              "line-blur": 0.5,
+              "line-color": "#aaaaaa",
+              "line-width": {
+                stops: [
+                  [0, 2],
+                  [6, 6],
+                  [14, 9],
+                  [22, 18],
+                ],
+              },
+            },
+            filter: ["all"],
+            layout: {
+              "line-cap": "round",
+              "line-join": "round",
+              visibility: "visible",
+            },
+            source: "maplibre",
+            maxzoom: 24,
+            minzoom: 0,
+            "source-layer": "countries",
+          },
+          {
+            id: "countries-fill",
+            type: "fill",
+            paint: {
+              "fill-color": [
+                "match",
+                ["get", "ADM0_A3"],
+                [
+                  "FRA",
+                  "ESP",
+                  "PRT",
+                  "GBR",
+                  "DEU",
+                  "FIN",
+                  "SWE",
+                  "NOR",
+                  "BEL",
+                  "LUX",
+                  "DNK",
+                  "NLD",
+                  "ITA",
+                  "CHE",
+                  "AUT",
+                  "POL",
+                  "CZE",
+                  "SVK",
+                  "SVN",
+                  "HUN",
+                  "HRV",
+                  "UKR",
+                  "MDA",
+                  "ROU",
+                  "BGR",
+                  "IRL",
+                  "GRC",
+                  "LTU",
+                ],
+                "#ffffff",
+                "#eeeeee",
+              ],
+            },
+            filter: ["all"],
+            layout: {
+              visibility: "visible",
+            },
+            source: "maplibre",
+            maxzoom: 24,
+            "source-layer": "countries",
+          },
+          {
+            id: "countries-boundary",
+            type: "line",
+            paint: {
+              "line-color": "rgba(245, 245, 245, 1)",
+              "line-width": {
+                stops: [
+                  [1, 1],
+                  [6, 2],
+                  [14, 6],
+                  [22, 12],
+                ],
+              },
+              "line-opacity": {
+                stops: [
+                  [3, 0.5],
+                  [6, 1],
+                ],
+              },
+            },
+            layout: {
+              "line-cap": "round",
+              "line-join": "round",
+              visibility: "visible",
+            },
+            source: "maplibre",
+            maxzoom: 24,
+            "source-layer": "countries",
+          },
+          {
+            id: "geolines",
+            type: "line",
+            paint: {
+              "line-color": "#aaaaaa",
+              "line-opacity": 1,
+              "line-dasharray": [3, 3],
+            },
+            filter: ["all", ["!=", "name", "International Date Line"]],
+            layout: {
+              visibility: "visible",
+            },
+            source: "maplibre",
+            maxzoom: 24,
+            "source-layer": "geolines",
+          },
+          {
+            id: "geolines-label",
+            type: "symbol",
+            paint: {
+              "text-color": "#aaaaaa",
+              "text-halo-blur": 1,
+              "text-halo-color": "rgba(255, 255, 255, 1)",
+              "text-halo-width": 1,
+            },
+            filter: ["all", ["!=", "name", "International Date Line"]],
+            layout: {
+              "text-font": ["Open Sans Semibold"],
+              "text-size": {
+                stops: [
+                  [2, 12],
+                  [6, 16],
+                ],
+              },
+              "text-field": "{name}",
+              visibility: "visible",
+              "symbol-placement": "line",
+            },
+            source: "maplibre",
+            maxzoom: 24,
+            minzoom: 1,
+            "source-layer": "geolines",
+          },
+          {
+            id: "countries-label",
+            type: "symbol",
+            paint: {
+              "text-color": "rgba(8, 37, 77, 1)",
+              "text-halo-blur": {
+                stops: [
+                  [2, 0.2],
+                  [6, 0],
+                ],
+              },
+              "text-halo-color": "rgba(255, 255, 255, 1)",
+              "text-halo-width": {
+                stops: [
+                  [2, 1],
+                  [6, 1.6],
+                ],
+              },
+            },
+            filter: ["all"],
+            layout: {
+              "text-font": ["Open Sans Semibold"],
+              "text-size": {
+                stops: [
+                  [2, 10],
+                  [4, 12],
+                  [6, 16],
+                ],
+              },
+              "text-field": {
+                stops: [
+                  [2, "{ABBREV}"],
+                  [4, "{NAME}"],
+                ],
+              },
+              visibility: "visible",
+              "text-max-width": 10,
+              "text-transform": {
+                stops: [
+                  [0, "uppercase"],
+                  [2, "none"],
+                ],
+              },
+            },
+            source: "maplibre",
+            maxzoom: 24,
+            minzoom: 2,
+            "source-layer": "centroids",
+          },
+        ],
+        bearing: 0,
+        sources: {
+          maplibre: {
+            url: "https://demotiles.maplibre.org/tiles/tiles.json",
+            type: "vector",
+          },
+        },
+        version: 8,
+      } as any,
       center: [routeParams.lng, routeParams.lat],
       zoom: routeParams.zoom,
     });
 
-    mapboxMap.on("load", () => {
-      setMap(mapboxMap);
+    maplibreMap.on("load", () => {
+      setMap(maplibreMap);
 
-      mapboxMap.addSource("stations", {
+      maplibreMap.addSource("stations", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       });
 
-      mapboxMap.addSource("countries", {
-        type: "vector",
-        url: "mapbox://mapbox.country-boundaries-v1",
-      });
-
-      mapboxMap.addSource("isochrones", {
+      maplibreMap.addSource("isochrones", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       });
-      mapboxMap.addSource("hoveredStation", {
+      maplibreMap.addSource("hoveredStation", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       });
-      mapboxMap.addSource("selectedStation", {
+      maplibreMap.addSource("selectedStation", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       });
 
-      mapboxMap.addLayer(
-        {
-          id: "country-boundaries",
-          type: "fill",
-          source: "countries",
-          "source-layer": "country_boundaries",
-          filter: [
-            "match",
-            ["get", "iso_3166_1_alpha_3"],
-            ["FRA"],
-            true,
-            ["ESP"],
-            true,
-            ["PRT"],
-            true,
-            ["GBR"],
-            true,
-            ["DEU"],
-            true,
-            ["FIN"],
-            true,
-            ["SWE"],
-            true,
-            ["NOR"],
-            true,
-            ["BEL"],
-            true,
-            ["LUX"],
-            true,
-            ["DNK"],
-            true,
-            ["NLD"],
-            true,
-            ["ITA"],
-            true,
-            ["CHE"],
-            true,
-            ["AUT"],
-            true,
-            ["POL"],
-            true,
-            ["CZE"],
-            true,
-            ["SVK"],
-            true,
-            ["SVN"],
-            true,
-            ["HUN"],
-            true,
-            ["HRV"],
-            true,
-            ["UKR"],
-            true,
-            ["MDA"],
-            true,
-            ["ROU"],
-            true,
-            ["BGR"],
-            true,
-            ["IRL"],
-            true,
-            ["GRC"],
-            true,
-            ["LTU"],
-            true,
-            false,
-          ],
-          layout: {},
-          paint: { "fill-color": "hsl(0, 0%, 100%)" },
+      maplibreMap.addLayer({
+        id: "stations",
+        type: "circle",
+        source: "stations",
+        paint: {
+          "circle-radius": 5,
+          "circle-opacity": 0,
         },
-        "water shadow"
-      );
+      });
 
-      mapboxMap.addLayer(
-        {
-          id: "stations",
-          type: "circle",
-          source: "stations",
-          paint: {
-            "circle-radius": 5,
-            "circle-opacity": 0,
-          },
-        },
-        "waterway-label"
-      );
-
-      mapboxMap.addLayer(
+      maplibreMap.addLayer(
         {
           id: "isochrones",
           type: "fill",
@@ -205,10 +342,10 @@ const Home: NextPage = () => {
             ],
           },
         },
-        "waterway-label"
+        "countries-label"
       );
 
-      mapboxMap.addLayer(
+      maplibreMap.addLayer(
         {
           id: "isochrones-outline",
           type: "line",
@@ -235,10 +372,10 @@ const Home: NextPage = () => {
             "line-width": 1.5,
           },
         },
-        "waterway-label"
+        "countries-label"
       );
 
-      mapboxMap.addLayer({
+      maplibreMap.addLayer({
         id: "stations-symbol",
         type: "symbol",
         source: "stations",
@@ -246,23 +383,20 @@ const Home: NextPage = () => {
           "text-field": ["get", "name"],
           "text-offset": [0, -1.5],
           "text-size": 10,
-          "text-font": ["DIN Pro Medium", "Open Sans Regular"],
-          "icon-image": "dot-11",
         },
         paint: {
           "text-color": "#333",
         },
-        minzoom: 7,
+        minzoom: 6,
       });
 
-      mapboxMap.addLayer({
+      maplibreMap.addLayer({
         id: "hoveredStation",
         type: "symbol",
         source: "hoveredStation",
         layout: {
           "text-field": ["get", "name"],
           "text-offset": [0, -1.5],
-          "text-font": ["DIN Pro Bold", "Open Sans Bold"],
           "icon-image": "dot-11",
         },
         paint: {
@@ -270,15 +404,13 @@ const Home: NextPage = () => {
         },
       });
 
-      mapboxMap.addLayer({
+      maplibreMap.addLayer({
         id: "selectedStation",
         type: "symbol",
         source: "selectedStation",
         layout: {
           "text-field": ["get", "name"],
           "text-offset": [0, -1.5],
-          "text-font": ["DIN Pro Bold", "Open Sans Bold"],
-          "icon-image": "dot-11",
         },
         paint: {
           "text-color": "#110",
@@ -410,7 +542,7 @@ const Home: NextPage = () => {
   const setMapIsochronesData = useCallback(
     (
       station: number,
-      map: mapboxgl.Map,
+      map: maplibregl.Map,
       isochronesData: IsochronesRes | undefined
     ) => {
       if (isochronesData && isochronesData.stationId === station) {
