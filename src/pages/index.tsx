@@ -19,6 +19,7 @@ import { Trans, useTranslation } from "next-i18next";
 import { queryTypes, useQueryStates } from "next-usequerystate";
 import { useRouter } from "next/router";
 import AdBlock from "~/components/adBlock";
+import layers from "protomaps-themes-base";
 
 const Home: NextPage = () => {
   const [routeParams, setRouteParams] = useQueryStates({
@@ -53,221 +54,186 @@ const Home: NextPage = () => {
       container: mapContainer.current!,
       style: {
         name: "MapLibre",
-        glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
-        layers: [
-          {
-            id: "background",
-            type: "background",
-            paint: {
-              "background-color": "#dddddd",
-            },
-            layout: {
-              visibility: "visible",
-            },
-            maxzoom: 24,
-          },
-          {
-            id: "coastline",
-            type: "line",
-            paint: {
-              "line-blur": 0.5,
-              "line-color": "#aaaaaa",
-              "line-width": {
-                stops: [
-                  [0, 2],
-                  [6, 6],
-                  [14, 9],
-                  [22, 18],
-                ],
-              },
-            },
-            filter: ["all"],
-            layout: {
-              "line-cap": "round",
-              "line-join": "round",
-              visibility: "visible",
-            },
-            source: "maplibre",
-            maxzoom: 24,
-            minzoom: 0,
-            "source-layer": "countries",
-          },
-          {
-            id: "countries-fill",
-            type: "fill",
-            paint: {
-              "fill-color": [
-                "match",
-                ["get", "ADM0_A3"],
-                [
-                  "FRA",
-                  "ESP",
-                  "PRT",
-                  "GBR",
-                  "DEU",
-                  "FIN",
-                  "SWE",
-                  "NOR",
-                  "BEL",
-                  "LUX",
-                  "DNK",
-                  "NLD",
-                  "ITA",
-                  "CHE",
-                  "AUT",
-                  "POL",
-                  "CZE",
-                  "SVK",
-                  "SVN",
-                  "HUN",
-                  "HRV",
-                  "UKR",
-                  "MDA",
-                  "ROU",
-                  "BGR",
-                  "IRL",
-                  "GRC",
-                  "LTU",
-                ],
-                "#ffffff",
-                "#eeeeee",
-              ],
-            },
-            filter: ["all"],
-            layout: {
-              visibility: "visible",
-            },
-            source: "maplibre",
-            maxzoom: 24,
-            "source-layer": "countries",
-          },
-          {
-            id: "countries-boundary",
-            type: "line",
-            paint: {
-              "line-color": "rgba(245, 245, 245, 1)",
-              "line-width": {
-                stops: [
-                  [1, 1],
-                  [6, 2],
-                  [14, 6],
-                  [22, 12],
-                ],
-              },
-              "line-opacity": {
-                stops: [
-                  [3, 0.5],
-                  [6, 1],
-                ],
-              },
-            },
-            layout: {
-              "line-cap": "round",
-              "line-join": "round",
-              visibility: "visible",
-            },
-            source: "maplibre",
-            maxzoom: 24,
-            "source-layer": "countries",
-          },
-          {
-            id: "geolines",
-            type: "line",
-            paint: {
-              "line-color": "#aaaaaa",
-              "line-opacity": 1,
-              "line-dasharray": [3, 3],
-            },
-            filter: ["all", ["!=", "name", "International Date Line"]],
-            layout: {
-              visibility: "visible",
-            },
-            source: "maplibre",
-            maxzoom: 24,
-            "source-layer": "geolines",
-          },
-          {
-            id: "geolines-label",
-            type: "symbol",
-            paint: {
-              "text-color": "#aaaaaa",
-              "text-halo-blur": 1,
-              "text-halo-color": "rgba(255, 255, 255, 1)",
-              "text-halo-width": 1,
-            },
-            filter: ["all", ["!=", "name", "International Date Line"]],
-            layout: {
-              "text-font": ["Open Sans Semibold"],
-              "text-size": {
-                stops: [
-                  [2, 12],
-                  [6, 16],
-                ],
-              },
-              "text-field": "{name}",
-              visibility: "visible",
-              "symbol-placement": "line",
-            },
-            source: "maplibre",
-            maxzoom: 24,
-            minzoom: 1,
-            "source-layer": "geolines",
-          },
-          {
-            id: "countries-label",
-            type: "symbol",
-            paint: {
-              "text-color": "rgba(8, 37, 77, 1)",
-              "text-halo-blur": {
-                stops: [
-                  [2, 0.2],
-                  [6, 0],
-                ],
-              },
-              "text-halo-color": "rgba(255, 255, 255, 1)",
-              "text-halo-width": {
-                stops: [
-                  [2, 1],
-                  [6, 1.6],
-                ],
-              },
-            },
-            filter: ["all"],
-            layout: {
-              "text-font": ["Open Sans Semibold"],
-              "text-size": {
-                stops: [
-                  [2, 10],
-                  [4, 12],
-                  [6, 16],
-                ],
-              },
-              "text-field": {
-                stops: [
-                  [2, "{ABBREV}"],
-                  [4, "{NAME}"],
-                ],
-              },
-              visibility: "visible",
-              "text-max-width": 10,
-              "text-transform": {
-                stops: [
-                  [0, "uppercase"],
-                  [2, "none"],
-                ],
-              },
-            },
-            source: "maplibre",
-            maxzoom: 24,
-            minzoom: 2,
-            "source-layer": "centroids",
-          },
-        ],
+        glyphs: "https://cdn.protomaps.com/fonts/pbf/{fontstack}/{range}.pbf",
+        layers: layers("protomaps", "light"),
+        // layers: [
+        //   {
+        //     id: "background",
+        //     type: "background",
+        //     paint: {
+        //       "background-color": "#dddddd",
+        //     },
+        //     layout: {
+        //       visibility: "visible",
+        //     },
+        //     maxzoom: 24,
+        //   },
+        //   {
+        //     id: "coastline",
+        //     type: "line",
+        //     paint: {
+        //       "line-blur": 0.5,
+        //       "line-color": "#aaaaaa",
+        //       "line-width": {
+        //         stops: [
+        //           [0, 2],
+        //           [6, 6],
+        //           [14, 9],
+        //           [22, 18],
+        //         ],
+        //       },
+        //     },
+        //     layout: {
+        //       "line-cap": "round",
+        //       "line-join": "round",
+        //       visibility: "visible",
+        //     },
+        //     source: "protomaps",
+        //     maxzoom: 24,
+        //     minzoom: 0,
+        //     "source-layer": "places",
+        //     filter: ["==", "place", "country"],
+        //   },
+        //   {
+        //     id: "countries-fill",
+        //     type: "fill",
+        //     paint: {
+        //       "fill-color": [
+        //         "match",
+        //         ["get", "ADM0_A3"],
+        //         [
+        //           "FRA",
+        //           "ESP",
+        //           "PRT",
+        //           "GBR",
+        //           "DEU",
+        //           "FIN",
+        //           "SWE",
+        //           "NOR",
+        //           "BEL",
+        //           "LUX",
+        //           "DNK",
+        //           "NLD",
+        //           "ITA",
+        //           "CHE",
+        //           "AUT",
+        //           "POL",
+        //           "CZE",
+        //           "SVK",
+        //           "SVN",
+        //           "HUN",
+        //           "HRV",
+        //           "UKR",
+        //           "MDA",
+        //           "ROU",
+        //           "BGR",
+        //           "IRL",
+        //           "GRC",
+        //           "LTU",
+        //         ],
+        //         "#ffffff",
+        //         "#eeeeee",
+        //       ],
+        //     },
+        //     layout: {
+        //       visibility: "visible",
+        //     },
+        //     source: "protomaps",
+        //     maxzoom: 24,
+        //     "source-layer": "places",
+        //     filter: ["==", "place", "country"],
+        //   },
+        //   {
+        //     id: "countries-boundary",
+        //     type: "line",
+        //     paint: {
+        //       "line-color": "rgba(245, 245, 245, 1)",
+        //       "line-width": {
+        //         stops: [
+        //           [1, 1],
+        //           [6, 2],
+        //           [14, 6],
+        //           [22, 12],
+        //         ],
+        //       },
+        //       "line-opacity": {
+        //         stops: [
+        //           [3, 0.5],
+        //           [6, 1],
+        //         ],
+        //       },
+        //     },
+        //     layout: {
+        //       "line-cap": "round",
+        //       "line-join": "round",
+        //       visibility: "visible",
+        //     },
+        //     source: "protomaps",
+        //     maxzoom: 24,
+        //     "source-layer": "places",
+        //     filter: ["==", "place", "country"],
+        //   },
+        //   {
+        //     id: "countries-label",
+        //     type: "symbol",
+        //     paint: {
+        //       "text-color": "rgba(8, 37, 77, 1)",
+        //       "text-halo-blur": {
+        //         stops: [
+        //           [2, 0.2],
+        //           [6, 0],
+        //         ],
+        //       },
+        //       "text-halo-color": "rgba(255, 255, 255, 1)",
+        //       "text-halo-width": {
+        //         stops: [
+        //           [2, 1],
+        //           [6, 1.6],
+        //         ],
+        //       },
+        //     },
+        //     filter: ["all"],
+        //     layout: {
+        //       "text-font": ["Open Sans Semibold"],
+        //       "text-size": {
+        //         stops: [
+        //           [2, 10],
+        //           [4, 12],
+        //           [6, 16],
+        //         ],
+        //       },
+        //       "text-field": {
+        //         stops: [
+        //           [2, "{ABBREV}"],
+        //           [4, "{NAME}"],
+        //         ],
+        //       },
+        //       visibility: "visible",
+        //       "text-max-width": 10,
+        //       "text-transform": {
+        //         stops: [
+        //           [0, "uppercase"],
+        //           [2, "none"],
+        //         ],
+        //       },
+        //     },
+        //     source: "protomaps",
+        //     maxzoom: 24,
+        //     minzoom: 2,
+        //     "source-layer": "centroids",
+        //   },
+        // ],
         bearing: 0,
         sources: {
-          maplibre: {
-            url: "https://demotiles.maplibre.org/tiles/tiles.json",
+          protomaps: {
             type: "vector",
+            tiles: [
+              "https://api.protomaps.com/tiles/v2/{z}/{x}/{y}.pbf?key=489fc1d3bce6957a",
+            ],
+            minzoom: 0,
+            maxzoom: 14,
+            attribution:
+              '<a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>',
           },
         },
         version: 8,
@@ -298,6 +264,55 @@ const Home: NextPage = () => {
       });
 
       maplibreMap.addLayer({
+        id: "countries-fill",
+        type: "fill",
+        paint: {
+          "fill-color": [
+            "match",
+            ["get", "ADM0_A3"],
+            [
+              "FRA",
+              "ESP",
+              "PRT",
+              "GBR",
+              "DEU",
+              "FIN",
+              "SWE",
+              "NOR",
+              "BEL",
+              "LUX",
+              "DNK",
+              "NLD",
+              "ITA",
+              "CHE",
+              "AUT",
+              "POL",
+              "CZE",
+              "SVK",
+              "SVN",
+              "HUN",
+              "HRV",
+              "UKR",
+              "MDA",
+              "ROU",
+              "BGR",
+              "IRL",
+              "GRC",
+              "LTU",
+            ],
+            "#ffffff",
+            "#eeeeee",
+          ],
+        },
+        layout: {
+          visibility: "visible",
+        },
+        source: "protomaps",
+        maxzoom: 24,
+        "source-layer": "boundaries",
+      });
+
+      maplibreMap.addLayer({
         id: "stations",
         type: "circle",
         source: "stations",
@@ -307,73 +322,67 @@ const Home: NextPage = () => {
         },
       });
 
-      maplibreMap.addLayer(
-        {
-          id: "isochrones",
-          type: "fill",
-          source: "isochrones",
-          layout: {},
-          paint: {
-            "fill-opacity": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              7,
-              0.7,
-              15,
-              0.2,
-            ],
-            "fill-color": [
-              "interpolate",
-              ["linear"],
-              ["get", "duration"],
-              0,
-              "rgba(189,0,38,0.9)",
-              60,
-              "rgba(240,59,32,0.8)",
-              120,
-              "rgba(253,141,60,0.7)",
-              180,
-              "rgba(254,204,92,0.6)",
-              240,
-              "rgba(254,217,118, 0.5)",
-              300,
-              "rgba(255,255,178, 0.4)",
-            ],
-          },
+      maplibreMap.addLayer({
+        id: "isochrones",
+        type: "fill",
+        source: "isochrones",
+        layout: {},
+        paint: {
+          "fill-opacity": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            7,
+            0.7,
+            15,
+            0.2,
+          ],
+          "fill-color": [
+            "interpolate",
+            ["linear"],
+            ["get", "duration"],
+            0,
+            "rgba(189,0,38,0.9)",
+            60,
+            "rgba(240,59,32,0.8)",
+            120,
+            "rgba(253,141,60,0.7)",
+            180,
+            "rgba(254,204,92,0.6)",
+            240,
+            "rgba(254,217,118, 0.5)",
+            300,
+            "rgba(255,255,178, 0.4)",
+          ],
         },
-        "countries-label"
-      );
+      });
 
-      maplibreMap.addLayer(
-        {
-          id: "isochrones-outline",
-          type: "line",
-          source: "isochrones",
-          layout: {},
-          paint: {
-            "line-color": [
-              "interpolate",
-              ["linear"],
-              ["get", "duration"],
-              0,
-              "rgba(189,0,38,0.8)",
-              60,
-              "rgba(240,59,32,0.8)",
-              120,
-              "rgba(253,141,60,0.8)",
-              180,
-              "rgba(254,204,92,0.8)",
-              240,
-              "rgba(254,217,118,0.8)",
-              300,
-              "rgba(224, 116, 38,0.9)",
-            ],
-            "line-width": 1.5,
-          },
+      maplibreMap.addLayer({
+        id: "isochrones-outline",
+        type: "line",
+        source: "isochrones",
+        layout: {},
+        paint: {
+          "line-color": [
+            "interpolate",
+            ["linear"],
+            ["get", "duration"],
+            0,
+            "rgba(189,0,38,0.8)",
+            60,
+            "rgba(240,59,32,0.8)",
+            120,
+            "rgba(253,141,60,0.8)",
+            180,
+            "rgba(254,204,92,0.8)",
+            240,
+            "rgba(254,217,118,0.8)",
+            300,
+            "rgba(224, 116, 38,0.9)",
+          ],
+          "line-width": 1.5,
         },
-        "countries-label"
-      );
+      });
 
       maplibreMap.addLayer({
         id: "stations-symbol",
@@ -397,7 +406,6 @@ const Home: NextPage = () => {
         layout: {
           "text-field": ["get", "name"],
           "text-offset": [0, -1.5],
-          "icon-image": "dot-11",
         },
         paint: {
           "text-color": "#110",
