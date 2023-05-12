@@ -1,0 +1,14 @@
+{
+  "chronotrains": "Chronotrains",
+  "tagline": "Poglejte kako daleč lahko potujete z vlakom v 5 urah iz katere koli postaje v Evropi na tem interaktivnem zemljevidu.",
+  "title": "Kako daleč lahko pridete s vlakom v 5 urah?",
+  "close": "Zapri podokno",
+  "intro": "Zemljevid prikazuje, kako daleč lahko potujete od posamezne postaje v Evropi v manj kot 5 urah.",
+  "credits": "Navdihuje ga veliki <1>Direkt Bahn Guru</1>. Podatki s te spletne strani izvirajo iz Deutsche Bahn.",
+  "helper": "Premaknite miško nad postajo, da vidite izokrone iz tega mesta.",
+  "assumptions": "Predpostavljamo izmenjave na 20 minut in tranzit med postajami malo višji od hitrosti hoje. Posledično moremo potovalne čase interpretirati kot optimalne.",
+  "reachable": "Dosegljivost v:",
+  "questions": "Kakšno vprašanje? Pišite mi na Twitterju:",
+  "open-source": "Izvorna koda je odprtokodna, na voljo na <1>Githubu</1>.",
+  "support": "Ohranitev delovanja projekta lahko podpirate na <1>ko-fi</1>."
+}
