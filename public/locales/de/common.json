@@ -1,6 +1,6 @@
 {
   "chronotrains": "Chronotrains",
-  "tagline": "Sehen Sie auf dieser interaktiven Karte, wie weit sie in fünf Stunden von jedem Bahnhof Europas aus reisen können.",
+  "tagline": "Sehen Sie auf dieser interaktiven Karte, wie weit sie in fünf Stunden von jedem Bahnhof Europas ausreisen können.",
   "title": "Wie weit können Sie in fünf Stunden mit dem Zug reisen?",
   "close": "Seitenleiste schließen",
   "intro": "Diese Karte zeigt, wie weit man in fünf Stunden von jedem Bahnhof in Europa reisen kann.",
@@ -9,6 +9,6 @@
   "assumptions": "Es wird von einer Umsteigezeit von 20 Minuten ausgegangen. Für den Übergang zwischen Bahnhöfen derselben Stadt wird angenommen, dass er mit einer zügigen Schrittgeschwindigkeit bewältigt werden kann. Diese Karte spiegelt also eine optimale Reisezeit wider. Die angezeigten Verbindungen könnten mit realen Umstiegszeiten eventuell nicht existieren.",
   "reachable": "Erreichbar in...",
   "questions": "Fragen? Schreiben Sie mir auf Twitter: ",
-  "open-source": "Dieses Projekt ist quelloffen und auf <1>Github</1> erhältlich.",
-  "support": "Unterstützen sie dieses Projekt auf <1>ko-fi</1>."
+  "open-source": "Dieses Projekt ist Open-Source und auf <1>Github</1> erhältlich.",
+  "support": "Unterstützen Sie dieses Projekt auf <1>ko-fi</1>."
 }
