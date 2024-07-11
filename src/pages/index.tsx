@@ -6,8 +6,6 @@ import useSWR, { useSWRConfig } from "swr";
 import { IsochronesRes } from "./api/isochrones/[stationId]";
 import { FeatureCollection, MultiPolygon, Polygon } from "@turf/turf";
 
-mapboxgl.accessToken =
-  "pk.eyJ1IjoiYmVuamFtaW50ZCIsImEiOiJjaW83enIwNjYwMnB1dmlsejN6cDBzbm93In0.0ZOGwSLp8OjW6vCaEKYFng";
 const Home: NextPage = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
@@ -27,6 +25,7 @@ const Home: NextPage = () => {
     let mapboxMap = new mapboxgl.Map({
       container: mapContainer.current!,
       style: "mapbox://styles/benjamintd/cl64tnf2g000814pdk237r6ij",
+      accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
       center: [2, 45],
       zoom: 4,
     });
