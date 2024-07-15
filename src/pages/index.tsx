@@ -20,12 +20,13 @@ const Home: NextPage = () => {
   console.log(isochronesData)
   const { cache } = useSWRConfig();
 
+  mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
+
   useEffect(() => {
     if (map) return; // initialize map only once
     let mapboxMap = new mapboxgl.Map({
       container: mapContainer.current!,
       style: "mapbox://styles/benjamintd/cl64tnf2g000814pdk237r6ij",
-      accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
       center: [2, 45],
       zoom: 4,
     });
