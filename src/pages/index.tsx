@@ -17,10 +17,8 @@ const Home: NextPage = () => {
     hoveredStation ? `/isochrones/${hoveredStation}.json` : null
   );
 
-  console.log(isochronesData)
   const { cache } = useSWRConfig();
 
-  mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!;
 
   useEffect(() => {
     if (map) return; // initialize map only once
@@ -29,6 +27,7 @@ const Home: NextPage = () => {
       style: "mapbox://styles/benjamintd/cl64tnf2g000814pdk237r6ij",
       center: [2, 45],
       zoom: 4,
+      accessToken: "pk.eyJ1IjoiYmVuamFtaW50ZCIsImEiOiJjbG10MHphMWMwMGc2Mmxsb2Q1ZzNyNjV4In0.l_bLHlHGbtyicw5-weLZ3g"
     });
 
     mapboxMap.on("load", () => {
